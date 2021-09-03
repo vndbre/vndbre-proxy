@@ -1,8 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "VnListProxy.Proto", "VnListProxy.Proto\VnListProxy.Proto.fsproj", "{1929DA7C-1334-45BB-B8FD-079979CDC429}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1929DA7C-1334-45BB-B8FD-079979CDC429}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1929DA7C-1334-45BB-B8FD-079979CDC429}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1929DA7C-1334-45BB-B8FD-079979CDC429}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1929DA7C-1334-45BB-B8FD-079979CDC429}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
