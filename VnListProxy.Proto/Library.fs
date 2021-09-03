@@ -1,10 +1,12 @@
 ﻿namespace VnListProxy.Proto
 
 open System
-open System.ComponentModel.DataAnnotations
 open System.IO
+open System.Net.Sockets
 open System.Text
 open System.Text.Json
+open System.Threading.Tasks
+open FSharp.Control.Tasks
 
 [<AutoOpen>]
 module Prelude =
@@ -28,19 +30,14 @@ module Response =
         else
             None
 
-    let private trim (str: string) = str.Trim().TrimEnd(char 0x04)
-
     let parse (message: string) =
+        let trim (str: string) = str.Trim().TrimEnd(char 0x04)
+
         match message with
         | StartsWithOrdinal "results" j -> j |> trim |> Results
         | StartsWithOrdinal "error" j -> j |> trim |> Error
         | StartsWithOrdinal "ok" j -> j |> trim |> Results
         | _ -> Unknown ^ trim message
-
-    type dto =
-        { [<Required>]
-          response: string
-          data: string }
 
     let toResponseName =
         function
@@ -65,3 +62,52 @@ module Response =
         writer.WriteString("response", toResponseName t)
         writeData writer t
         Encoding.UTF8.GetString(ms.ToArray())
+
+    let readByte (stream: NetworkStream) =
+        task {
+            let m = Memory<byte>([| byte 0 |])
+            let! _ = stream.ReadAsync(m).AsTask()
+            return m.ToArray().[0]
+        }
+
+    let nextMsg stream =
+        let rec nextMsgAux acc =
+            task {
+                let! b = readByte stream
+
+                if b = byte 0x04 then
+                    return [ b ]
+                else
+                    return! nextMsgAux (b :: acc)
+            }
+
+        task {
+            let! read = nextMsgAux []
+            let arr = read |> List.toArray
+            let str = Encoding.UTF8.GetString(arr)
+            return str
+        }
+
+module Connection =
+    type t =
+        { Host: string
+          Port: int
+          PortTls: int
+          Client: string
+          ClientVer: string }
+
+    let connect conf =
+        let a = new TcpClient(conf.Host, conf.Port)
+        a
+
+    let sendLogin (stream: NetworkStream) conf login password =
+        let a =
+            $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":%s{conf.ClientVer},\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
+
+        let buf = Encoding.UTF8.GetBytes a
+
+        task {
+            let! _ = stream.WriteAsync(buf, 0, buf.Length)
+            let! ans = Response.nextMsg stream
+            return ans
+        }
