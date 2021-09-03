@@ -5,7 +5,6 @@ open System.IO
 open System.Net.Sockets
 open System.Text
 open System.Text.Json
-open System.Threading.Tasks
 open FSharp.Control.Tasks
 
 [<AutoOpen>]
@@ -76,14 +75,14 @@ module Response =
                 let! b = readByte stream
 
                 if b = byte 0x04 then
-                    return [ b ]
+                    return b :: acc
                 else
                     return! nextMsgAux (b :: acc)
             }
 
         task {
             let! read = nextMsgAux []
-            let arr = read |> List.toArray
+            let arr = read |> List.rev |> List.toArray
             let str = Encoding.UTF8.GetString(arr)
             return str
         }
@@ -102,12 +101,13 @@ module Connection =
 
     let sendLogin (stream: NetworkStream) conf login password =
         let a =
-            $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":%s{conf.ClientVer},\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
+            $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
 
         let buf = Encoding.UTF8.GetBytes a
 
         task {
             let! _ = stream.WriteAsync(buf, 0, buf.Length)
+            let! _ = stream.WriteAsync([| byte 0x04 |], 0, 1)
             let! ans = Response.nextMsg stream
             return ans
         }
