@@ -115,7 +115,7 @@ module Response =
             writer.WritePropertyName("data")
             writer.WriteRawValue(json)
         | Ok -> ()
-        | Unknown raw -> writer.WriteString("rawdata", raw)
+        | Unknown raw -> writer.WriteString("raw", raw)
         | InternalError error -> writer.WriteString("error", string error)
 
     let toJson t =
