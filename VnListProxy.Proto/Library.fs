@@ -5,6 +5,7 @@ open System.IO
 open System.Net.Sockets
 open System.Text
 open System.Text.Json
+open System.Threading.Tasks
 open FSharp.Control.Tasks
 
 [<AutoOpen>]
@@ -15,9 +16,6 @@ module Prelude =
         let inline (>>=) a b = Option.bind b a
 
         let inline (>>|) a b = Option.map b a
-
-module Request =
-    type t = string
 
 module Proto =
     type error =
@@ -69,6 +67,7 @@ module Response =
     type error =
         | ProtoError of Proto.error
         | ParseError
+        | SendError
         | UnknownError
 
     type t =
@@ -95,8 +94,8 @@ module Response =
 
     let parseResult =
         function
-        | Result.Ok message -> parse message |> Result.Ok
-        | Result.Error error -> Result.Error ^ InternalError ^ ProtoError error
+        | Result.Ok message -> parse message
+        | Result.Error error -> InternalError ^ ProtoError error
 
     let toResponseName =
         function
@@ -148,16 +147,31 @@ module Connection =
         let a = new TcpClient(conf.Host, conf.Port)
         a
 
-    let login (stream: NetworkStream) conf login password =
-        let a =
-            $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
+module Request =
+    type t = string
 
-        let buf = Encoding.UTF8.GetBytes a
+    let login (conf: Connection.t) login password : t =
+        $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
 
+    let private write (stream: NetworkStream) (a: t) =
+        try
+            task {
+                let buf = Encoding.UTF8.GetBytes a
+
+                do! stream.WriteAsync(buf, 0, buf.Length)
+                do! stream.WriteAsync([| Proto.stopByte |], 0, 1)
+                return Ok()
+            }
+        with
+        | _ -> Task.FromResult ^ Error ^ Response.error.SendError
+
+    let send (stream: NetworkStream) (a: t) =
         task {
-            let! _ = stream.WriteAsync(buf, 0, buf.Length)
-            let! _ = stream.WriteAsync([| Proto.stopByte |], 0, 1)
-            let! ans = Proto.nextMsg stream
-            let ret = Response.parseResult ans
-            return ret
+            match! write stream a with
+            | Error err -> return Response.t.InternalError err
+            | _ ->
+                let! ans = Proto.nextMsg stream
+                let ret = Response.parseResult ans
+
+                return ret
         }

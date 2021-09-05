@@ -16,18 +16,15 @@ let main argv =
     let stream = client.GetStream()
 
     let tsk =
-        Connection.login stream conf "misterptits" password
+        Request.login conf "misterptits" password
+        |> Request.send stream
 
     let ans =
         tsk |> Async.AwaitTask |> Async.RunSynchronously
 
-    match ans with
-    | Ok a ->
-        printfn "%A" ^ Response.toJson a
-        printfn "%A" ^ Response.toHttpCode a
-        printfn "%A" ^ Response.toResponseName a
-    | _ -> ()
-
+    printfn "%A" ^ Response.toJson ans
+    printfn "%A" ^ Response.toHttpCode ans
+    printfn "%A" ^ Response.toResponseName ans
     printfn "%A" ans
 
     0
