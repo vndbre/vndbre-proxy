@@ -11,17 +11,72 @@ open FSharp.Control.Tasks
 module Prelude =
     let inline (^) a b = a b
 
+    module Option_Operators =
+        let inline (>>=) a b = Option.bind b a
+
+        let inline (>>|) a b = Option.map b a
+
 module Request =
-    type t = T of string
+    type t = string
+
+module Proto =
+    type error =
+        | ReceiveError
+        | EncodeError
+
+    let stopByte = byte 0x04
+
+    let readByte buff (stream: NetworkStream) =
+        task {
+            let! cnt = stream.ReadAsync(buff, 0, 1)
+
+            if cnt = 1 then
+                return ValueSome buff.[0]
+            else
+                return ValueNone
+        }
+
+    let nextMsg stream =
+        let rec nextMsgAux buff acc =
+            task {
+                let! b = readByte buff stream
+
+                match b with
+                | ValueSome bt when bt = stopByte -> return acc |> Some
+                | ValueSome bt -> return! nextMsgAux buff (bt :: acc)
+                | ValueNone -> return None
+            }
+
+        task {
+            let buff = [| byte 0 |]
+
+            match! nextMsgAux buff [] with
+            | Some read ->
+                let arr = read |> List.rev |> List.toArray
+
+                try
+                    return arr |> Encoding.UTF8.GetString |> Ok
+                with
+                | _ -> return Error EncodeError
+            | None -> return Error ReceiveError
+        }
 
 module Response =
     type json = string
+
+    type raw = string
+
+    type error =
+        | ProtoError of Proto.error
+        | ParseError
+        | UnknownError
 
     type t =
         | Results of json
         | Error of json
         | Ok
-        | Unknown of string
+        | Unknown of raw
+        | InternalError of error
 
     let (|StartsWithOrdinal|_|) str (message: string) =
         if message.StartsWith(str, StringComparison.Ordinal) then
@@ -30,13 +85,18 @@ module Response =
             None
 
     let parse (message: string) =
-        let trim (str: string) = str.Trim().TrimEnd(char 0x04)
+        let trim (str: string) = str.Trim()
 
         match message with
         | StartsWithOrdinal "results" j -> j |> trim |> Results
         | StartsWithOrdinal "error" j -> j |> trim |> Error
-        | StartsWithOrdinal "ok" j -> j |> trim |> Results
+        | StartsWithOrdinal "ok" _ -> Ok
         | _ -> Unknown ^ trim message
+
+    let parseResult =
+        function
+        | Result.Ok message -> parse message |> Result.Ok
+        | Result.Error error -> Result.Error ^ InternalError ^ ProtoError error
 
     let toResponseName =
         function
@@ -44,48 +104,37 @@ module Response =
         | Error _ -> "error"
         | Ok _ -> "ok"
         | Unknown _ -> "unknown"
+        | InternalError _ -> "internalerror"
+
+    let toHttpCode =
+        function
+        | Results _ -> Microsoft.AspNetCore.Http.StatusCodes.Status200OK
+        | Error _ -> Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest
+        | Ok _ -> Microsoft.AspNetCore.Http.StatusCodes.Status200OK
+        | Unknown _ -> Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError
+        | InternalError _ -> Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError
 
     let writeData (writer: Utf8JsonWriter) =
         function
         | Results json
         | Error json ->
-            writer.WriteStartObject("data")
+            writer.WritePropertyName("data")
             writer.WriteRawValue(json)
-            writer.WriteEndObject()
         | Ok -> ()
         | Unknown raw -> writer.WriteString("rawdata", raw)
+        | InternalError error -> writer.WriteString("error", string error)
 
     let toJson t =
         use ms = new MemoryStream()
-        use writer = new Utf8JsonWriter(ms)
-        writer.WriteString("response", toResponseName t)
-        writeData writer t
+
+        let () =
+            use writer = new Utf8JsonWriter(ms)
+            writer.WriteStartObject()
+            writer.WriteString("response", toResponseName t)
+            writeData writer t
+            writer.WriteEndObject()
+
         Encoding.UTF8.GetString(ms.ToArray())
-
-    let readByte (stream: NetworkStream) =
-        task {
-            let m = Memory<byte>([| byte 0 |])
-            let! _ = stream.ReadAsync(m).AsTask()
-            return m.ToArray().[0]
-        }
-
-    let nextMsg stream =
-        let rec nextMsgAux acc =
-            task {
-                let! b = readByte stream
-
-                if b = byte 0x04 then
-                    return b :: acc
-                else
-                    return! nextMsgAux (b :: acc)
-            }
-
-        task {
-            let! read = nextMsgAux []
-            let arr = read |> List.rev |> List.toArray
-            let str = Encoding.UTF8.GetString(arr)
-            return str
-        }
 
 module Connection =
     type t =
@@ -99,7 +148,7 @@ module Connection =
         let a = new TcpClient(conf.Host, conf.Port)
         a
 
-    let sendLogin (stream: NetworkStream) conf login password =
+    let login (stream: NetworkStream) conf login password =
         let a =
             $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
 
@@ -107,7 +156,8 @@ module Connection =
 
         task {
             let! _ = stream.WriteAsync(buf, 0, buf.Length)
-            let! _ = stream.WriteAsync([| byte 0x04 |], 0, 1)
-            let! ans = Response.nextMsg stream
-            return ans
+            let! _ = stream.WriteAsync([| Proto.stopByte |], 0, 1)
+            let! ans = Proto.nextMsg stream
+            let ret = Response.parseResult ans
+            return ret
         }
