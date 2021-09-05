@@ -12,11 +12,6 @@ open FSharp.Control.Tasks
 module Prelude =
     let inline (^) a b = a b
 
-    module Option_Operators =
-        let inline (>>=) a b = Option.bind b a
-
-        let inline (>>|) a b = Option.map b a
-
 module Proto =
     type error =
         | ReceiveError
@@ -34,21 +29,21 @@ module Proto =
                 return ValueNone
         }
 
+    let rec private nextMsgAux stream buff acc =
+        task {
+            let! b = readByte buff stream
+
+            match b with
+            | ValueSome bt when bt = stopByte -> return acc |> Some
+            | ValueSome bt -> return! nextMsgAux stream buff (bt :: acc)
+            | ValueNone -> return None
+        }
+
     let nextMsg stream =
-        let rec nextMsgAux buff acc =
-            task {
-                let! b = readByte buff stream
-
-                match b with
-                | ValueSome bt when bt = stopByte -> return acc |> Some
-                | ValueSome bt -> return! nextMsgAux buff (bt :: acc)
-                | ValueNone -> return None
-            }
-
         task {
             let buff = [| byte 0 |]
 
-            match! nextMsgAux buff [] with
+            match! nextMsgAux stream buff [] with
             | Some read ->
                 let arr = read |> List.rev |> List.toArray
 
@@ -136,12 +131,19 @@ module Response =
         Encoding.UTF8.GetString(ms.ToArray())
 
 module Connection =
-    type t =
+    type conf =
         { Host: string
           Port: int
           PortTls: int
           Client: string
           ClientVer: string }
+
+    let default' =
+        { Host = "api.vndb.org"
+          Port = 19534
+          PortTls = 19535
+          Client = "vn-list"
+          ClientVer = "0.0.1" }
 
     let connect conf =
         let a = new TcpClient(conf.Host, conf.Port)
@@ -150,7 +152,7 @@ module Connection =
 module Request =
     type t = string
 
-    let login (conf: Connection.t) login password : t =
+    let login (conf: Connection.conf) login password : t =
         $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
 
     let private write (stream: NetworkStream) (a: t) =

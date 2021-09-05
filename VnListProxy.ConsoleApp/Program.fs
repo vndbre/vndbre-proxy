@@ -2,29 +2,34 @@ open System
 open VnListProxy.Proto
 
 [<EntryPoint>]
-let main argv =
-    let conf =
-        { VnListProxy.Proto.Connection.t.Host = "api.vndb.org"
-          VnListProxy.Proto.Connection.t.Port = 19534
-          VnListProxy.Proto.Connection.t.PortTls = 19535
-          VnListProxy.Proto.Connection.t.Client = "vn-list"
-          VnListProxy.Proto.Connection.t.ClientVer = "0.0.1" }
+let main _ =
+    use client = Connection.connect Connection.default'
 
-    use client = Connection.connect conf
+    let login =
+        match Console.ReadLine() with
+        | "" -> "misterptits"
+        | s -> s
 
     let password = Console.ReadLine()
     let stream = client.GetStream()
 
-    let tsk =
-        Request.login conf "misterptits" password
-        |> Request.send stream
+    let requests =
+        [ Request.login Connection.default' login password
+          "get vn basic,anime (id = 17)"
+          "get quote basic (id>=1) {\"results\":1}" ]
 
-    let ans =
-        tsk |> Async.AwaitTask |> Async.RunSynchronously
+    let print a =
+        printfn ""
+        printfn "%A" ^ Response.toJson a
+        printfn "%A" ^ Response.toHttpCode a
+        printfn "%A" ^ Response.toResponseName a
+        printfn "%A" a
+        printfn ""
 
-    printfn "%A" ^ Response.toJson ans
-    printfn "%A" ^ Response.toHttpCode ans
-    printfn "%A" ^ Response.toResponseName ans
-    printfn "%A" ans
+    for req in requests do
+        Request.send stream req
+        |> Async.AwaitTask
+        |> Async.RunSynchronously
+        |> print
 
     0
