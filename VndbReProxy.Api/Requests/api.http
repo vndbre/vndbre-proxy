@@ -4,3 +4,9 @@ Content-Type: text/plain
 get quote basic (id>=1) {"results":1}
 
 ###
+POST {{host}}/api/v1/vndb?login={{login}}&password=wrong
+Content-Type: text/plain
+
+get quote basic (id>=1) {"results":1}
+
+###

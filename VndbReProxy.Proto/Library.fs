@@ -7,6 +7,7 @@ open System.Text
 open System.Text.Json
 open System.Threading.Tasks
 open FSharp.Control.Tasks
+open Microsoft.AspNetCore.Http
 
 module Proto =
     type error =
@@ -96,13 +97,17 @@ module Response =
         | Unknown _ -> "unknown"
         | InternalError _ -> "internalerror"
 
-    let toHttpCode =
+    let toHttpCode isAuth =
         function
-        | Results _ -> Microsoft.AspNetCore.Http.StatusCodes.Status200OK
-        | Error _ -> Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest
-        | Ok _ -> Microsoft.AspNetCore.Http.StatusCodes.Status200OK
-        | Unknown _ -> Microsoft.AspNetCore.Http.StatusCodes.Status501NotImplemented
-        | InternalError _ -> Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError
+        | Results _ -> StatusCodes.Status200OK
+        | Error _ ->
+            if isAuth then
+                StatusCodes.Status401Unauthorized
+            else
+                StatusCodes.Status400BadRequest
+        | Ok _ -> StatusCodes.Status200OK
+        | Unknown _ -> StatusCodes.Status501NotImplemented
+        | InternalError _ -> StatusCodes.Status500InternalServerError
 
     let writeData (writer: Utf8JsonWriter) =
         function
@@ -134,7 +139,7 @@ module Connection =
           Client: string
           ClientVer: string }
 
-    let default' =
+    let defaultConf =
         { Host = "api.vndb.org"
           Port = 19534
           PortTls = 19535

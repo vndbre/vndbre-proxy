@@ -8,10 +8,11 @@ open Giraffe.EndpointRouting
 open Giraffe.QueryReader
 open Microsoft.Extensions.Logging
 open VndbReProxy.Api.Utils
+open VndbReProxy.Proto
 
 let v1vndbHandler (login: string option) (password: string option) : HttpHandler =
     inject1<ILogger<Undefined>>
-    ^ fun logger _ ctx ->
+    ^ fun logger next ctx ->
         let login, password =
             match login, password with
             | Some login, Some password -> login, password
@@ -23,9 +24,20 @@ let v1vndbHandler (login: string option) (password: string option) : HttpHandler
             let! body = sr.ReadToEndAsync()
             logger.LogInformation(string DateTimeOffset.Now)
 
-            return!
-                $"%s{login} %s{password} %s{body}"
-                |> ctx.WriteTextAsync
+            use conn =
+                Connection.connect Connection.defaultConf
+
+            let lq =
+                Request.login Connection.defaultConf login password
+
+            let s = conn.GetStream()
+            let! w = Request.send s lq
+
+            match w with
+            | Response.t.Ok ->
+                let! ans = Request.send s body
+                return! returnResponse false ans next ctx
+            | _ -> return! returnResponse true w next ctx
         }
 
 let endpoints =

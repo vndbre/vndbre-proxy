@@ -1,6 +1,8 @@
 ﻿module VndbReProxy.Api.Utils
 
+open System.Net.Mime
 open Giraffe
+open VndbReProxy.Proto
 
 let (=@>) a b = a [ b ]
 
@@ -21,3 +23,13 @@ let inject3<'T1, 'T2, 'T3> (handler: _ -> _ -> _ -> HttpHandler) : HttpHandler =
         let s2 = ctx.GetService<'T2>()
         let s3 = ctx.GetService<'T3>()
         handler s1 s2 s3 next ctx
+
+let jsonFromString str : HttpHandler =
+    fun _ ctx ->
+        ctx.SetContentType MediaTypeNames.Application.Json
+        ctx.WriteStringAsync str
+
+let returnResponse isAuth (t: Response.t) : HttpHandler =
+    fun next ctx ->
+        ctx.SetStatusCode(Response.toHttpCode isAuth t)
+        jsonFromString (Response.toJson t) next ctx
