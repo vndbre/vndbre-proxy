@@ -1,5 +1,5 @@
 open System
-open VnListProxy.Proto
+open VndbReProxy.Proto
 
 [<EntryPoint>]
 let main _ =

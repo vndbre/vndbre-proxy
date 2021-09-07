@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VnListProxy.Proto\VnListProxy.Proto.fsproj" />
+      <ProjectReference Include="..\VndbReProxy.Proto\VndbReProxy.Proto.fsproj" />
     </ItemGroup>
 
 </Project>
