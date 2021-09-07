@@ -8,10 +8,6 @@ open System.Text.Json
 open System.Threading.Tasks
 open FSharp.Control.Tasks
 
-[<AutoOpen>]
-module Prelude =
-    let inline (^) a b = a b
-
 module Proto =
     type error =
         | ReceiveError

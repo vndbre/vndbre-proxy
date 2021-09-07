@@ -18,16 +18,19 @@ type Startup(configuration: IConfiguration) =
     // This method gets called by the runtime. Use this method to add services to the container.
     member _.ConfigureServices(services: IServiceCollection) =
         // Add framework services.
-        services.AddControllers() |> ignore
+        services.AddControllers() |> ignore<IMvcBuilder>
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
         if (env.IsDevelopment()) then
-            app.UseDeveloperExceptionPage() |> ignore
+            app.UseDeveloperExceptionPage()
+            |> ignore<IApplicationBuilder>
 
         app
             .UseHttpsRedirection()
             .UseRouting()
             .UseAuthorization()
-            .UseEndpoints(fun endpoints -> endpoints.MapControllers() |> ignore)
-        |> ignore
+            .UseEndpoints(fun endpoints ->
+                endpoints.MapControllers()
+                |> ignore<ControllerActionEndpointConventionBuilder>)
+        |> ignore<IApplicationBuilder>

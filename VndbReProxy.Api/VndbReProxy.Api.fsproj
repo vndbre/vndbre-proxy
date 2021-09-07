@@ -17,4 +17,8 @@
       <Content Include="Dockerfile" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\VndbReProxy.Prelude\VndbReProxy.Prelude.fsproj" />
+    </ItemGroup>
+
 </Project>
