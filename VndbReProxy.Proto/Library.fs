@@ -7,10 +7,7 @@ open System.Text
 open System.Text.Json
 open System.Threading.Tasks
 open FSharp.Control.Tasks
-
-[<AutoOpen>]
-module Prelude =
-    let inline (^) a b = a b
+open Microsoft.AspNetCore.Http
 
 module Proto =
     type error =
@@ -39,11 +36,27 @@ module Proto =
             | ValueNone -> return None
         }
 
+    let rec private nextMsgRef stream buff acc =
+        task {
+            let ret = ref None
+            let acc = ref acc
+
+            while Option.isNone !ret do
+                let! b = readByte buff stream
+
+                match b with
+                | ValueSome bt when bt = stopByte -> ret := Some !acc
+                | ValueSome bt -> acc := bt :: !acc
+                | ValueNone -> ret := None
+
+            return !ret
+        }
+
     let nextMsg stream =
         task {
             let buff = [| byte 0 |]
 
-            match! nextMsgAux stream buff [] with
+            match! nextMsgRef stream buff [] with
             | Some read ->
                 let arr = read |> List.rev |> List.toArray
 
@@ -100,13 +113,17 @@ module Response =
         | Unknown _ -> "unknown"
         | InternalError _ -> "internalerror"
 
-    let toHttpCode =
+    let toHttpCode isAuth =
         function
-        | Results _ -> Microsoft.AspNetCore.Http.StatusCodes.Status200OK
-        | Error _ -> Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest
-        | Ok _ -> Microsoft.AspNetCore.Http.StatusCodes.Status200OK
-        | Unknown _ -> Microsoft.AspNetCore.Http.StatusCodes.Status501NotImplemented
-        | InternalError _ -> Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError
+        | Results _ -> StatusCodes.Status200OK
+        | Error _ ->
+            if isAuth then
+                StatusCodes.Status401Unauthorized
+            else
+                StatusCodes.Status400BadRequest
+        | Ok _ -> StatusCodes.Status204NoContent
+        | Unknown _ -> StatusCodes.Status501NotImplemented
+        | InternalError _ -> StatusCodes.Status500InternalServerError
 
     let writeData (writer: Utf8JsonWriter) =
         function
@@ -114,9 +131,9 @@ module Response =
         | Error json ->
             writer.WritePropertyName("data")
             writer.WriteRawValue(json)
-        | Ok -> ()
-        | Unknown raw -> writer.WriteString("raw", raw)
-        | InternalError error -> writer.WriteString("error", string error)
+        | Ok -> writer.WriteNull("data")
+        | Unknown raw -> writer.WriteString("data", raw)
+        | InternalError error -> writer.WriteString("data", string error)
 
     let toJson t =
         use ms = new MemoryStream()
@@ -138,7 +155,7 @@ module Connection =
           Client: string
           ClientVer: string }
 
-    let default' =
+    let defaultConf =
         { Host = "api.vndb.org"
           Port = 19534
           PortTls = 19535
@@ -155,13 +172,15 @@ module Request =
     let login (conf: Connection.conf) login password : t =
         $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
 
+    let private stopByteBuff = [| Proto.stopByte |]
+
     let private write (stream: NetworkStream) (a: t) =
         try
             task {
                 let buf = Encoding.UTF8.GetBytes a
 
                 do! stream.WriteAsync(buf, 0, buf.Length)
-                do! stream.WriteAsync([| Proto.stopByte |], 0, 1)
+                do! stream.WriteAsync(stopByteBuff, 0, 1)
                 return Ok()
             }
         with
