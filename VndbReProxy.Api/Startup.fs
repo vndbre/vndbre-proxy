@@ -1,16 +1,11 @@
 namespace VndbReProxy.Api
 
-open System
-open System.Collections.Generic
-open System.Linq
-open System.Threading.Tasks
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
-open Microsoft.AspNetCore.HttpsPolicy
-open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
+open Giraffe.EndpointRouting
 
 type Startup(configuration: IConfiguration) =
     member _.Configuration = configuration
@@ -31,6 +26,6 @@ type Startup(configuration: IConfiguration) =
             .UseRouting()
             .UseAuthorization()
             .UseEndpoints(fun endpoints ->
-                endpoints.MapControllers()
-                |> ignore<ControllerActionEndpointConventionBuilder>)
+                endpoints.MapGiraffeEndpoints(Endpoints.endpoints)
+                |> ignore<unit>)
         |> ignore<IApplicationBuilder>

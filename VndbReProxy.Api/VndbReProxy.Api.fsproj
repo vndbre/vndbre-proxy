@@ -7,7 +7,7 @@
 
     <ItemGroup>
         <Compile Include="WeatherForecast.fs" />
-        <Compile Include="Controllers/WeatherForecastController.fs" />
+        <Compile Include="Endpoints.fs" />
         <Compile Include="Startup.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
@@ -19,6 +19,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\VndbReProxy.Prelude\VndbReProxy.Prelude.fsproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Giraffe" Version="5.0.0" />
     </ItemGroup>
 
 </Project>
