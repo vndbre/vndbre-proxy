@@ -1,30 +1,31 @@
 ﻿module VndbReProxy.Api.Endpoints
 
+open System.IO
+open FSharp.Control.Tasks
 open Giraffe
 open Giraffe.EndpointRouting
 open Giraffe.QueryReader
 
 let private (=>) a b = a [ b ]
 
-let handler1: HttpHandler =
-    fun _ ctx -> ctx.WriteTextAsync "Hello World"
-
-let handler2 (firstName: string, age: int) : HttpHandler =
+let v1vndbHandler (login: string option) (password: string option) : HttpHandler =
     fun _ ctx ->
-        sprintf "Hello %s, you are %i years old." firstName age
-        |> ctx.WriteTextAsync
+        let login, password =
+            match login, password with
+            | Some login, Some password -> login, password
+            | _ -> undefined
 
-let handler3 (a: string, b: string, c: string, d: int) : HttpHandler =
-    fun _ ctx ->
-        sprintf "Hello %s %s %s %i" a b c d
-        |> ctx.WriteTextAsync
+        task {
+            let bodyStream = ctx.Request.Body
+            use sr = new StreamReader(bodyStream)
+            let! body = sr.ReadToEndAsync()
+
+            return!
+                $"%s{login} %s{password} %s{body}"
+                |> ctx.WriteTextAsync
+        }
 
 let endpoints =
-    [ GET => route "/" ^ Query.read ("to", text)
-      GET => routef "/%s/%i" handler2
-      GET => routef "/%s/%s/%s/%i" handler3
-      subRoute
-          "/sub"
-          [
-            // Not specifying a http verb means it will listen to all verbs
-            route "/test" handler1 ] ]
+    [ POST
+      => route "/api/v1/vndb"
+         ^ Query.read ("login", "password", v1vndbHandler) ]
