@@ -155,13 +155,15 @@ module Request =
     let login (conf: Connection.conf) login password : t =
         $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
 
+    let private stopByteBuff = [| Proto.stopByte |]
+
     let private write (stream: NetworkStream) (a: t) =
         try
             task {
                 let buf = Encoding.UTF8.GetBytes a
 
                 do! stream.WriteAsync(buf, 0, buf.Length)
-                do! stream.WriteAsync([| Proto.stopByte |], 0, 1)
+                do! stream.WriteAsync(stopByteBuff, 0, 1)
                 return Ok()
             }
         with
