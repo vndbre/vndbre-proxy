@@ -36,11 +36,27 @@ module Proto =
             | ValueNone -> return None
         }
 
+    let rec private nextMsgRef stream buff acc =
+        task {
+            let ret = ref None
+            let acc = ref acc
+
+            while Option.isNone !ret do
+                let! b = readByte buff stream
+
+                match b with
+                | ValueSome bt when bt = stopByte -> ret := Some !acc
+                | ValueSome bt -> acc := bt :: !acc
+                | ValueNone -> ret := None
+
+            return !ret
+        }
+
     let nextMsg stream =
         task {
             let buff = [| byte 0 |]
 
-            match! nextMsgAux stream buff [] with
+            match! nextMsgRef stream buff [] with
             | Some read ->
                 let arr = read |> List.rev |> List.toArray
 
