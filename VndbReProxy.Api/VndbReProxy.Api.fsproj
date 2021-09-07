@@ -9,6 +9,7 @@
     <ItemGroup>
         <Content Include="Requests\api.http" />
         <Content Include="Requests\*.env.json" />
+        <Content Include="Properties\launchSettings.json" />
         <Content Include=".dockerignore" />
         <Content Include="Dockerfile" />
     </ItemGroup>
