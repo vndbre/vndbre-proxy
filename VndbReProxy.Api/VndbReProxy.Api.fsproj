@@ -3,7 +3,15 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <EnableDefaultContentItems>false</EnableDefaultContentItems>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="Requests\api.http" />
+        <Content Include="Requests\*.env.json" />
+        <Content Include=".dockerignore" />
+        <Content Include="Dockerfile" />
+    </ItemGroup>
 
     <ItemGroup>
         <Compile Include="Utils.fs" />
@@ -13,18 +21,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include=".dockerignore" />
-      <Content Include="Requests\api.http" />
-      <Content Include="Dockerfile" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\VndbReProxy.Prelude\VndbReProxy.Prelude.fsproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Giraffe" Version="5.0.0" />
       <PackageReference Include="Giraffe.QueryReader" Version="2.0.0" />
+      <PackageReference Update="FSharp.Core" Version="5.0.2" />
     </ItemGroup>
 
 </Project>
