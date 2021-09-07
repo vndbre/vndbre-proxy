@@ -1,4 +1,4 @@
-﻿namespace VnListProxy.Proto
+﻿namespace VndbReProxy.Proto
 
 open System
 open System.IO
@@ -105,7 +105,7 @@ module Response =
         | Results _ -> Microsoft.AspNetCore.Http.StatusCodes.Status200OK
         | Error _ -> Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest
         | Ok _ -> Microsoft.AspNetCore.Http.StatusCodes.Status200OK
-        | Unknown _ -> Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError
+        | Unknown _ -> Microsoft.AspNetCore.Http.StatusCodes.Status501NotImplemented
         | InternalError _ -> Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError
 
     let writeData (writer: Utf8JsonWriter) =

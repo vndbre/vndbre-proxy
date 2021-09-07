@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "VnListProxy.Proto", "VnListProxy.Proto\VnListProxy.Proto.fsproj", "{1929DA7C-1334-45BB-B8FD-079979CDC429}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "VndbReProxy.Proto", "VndbReProxy.Proto\VndbReProxy.Proto.fsproj", "{1929DA7C-1334-45BB-B8FD-079979CDC429}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "VnListProxy.ConsoleApp", "VnListProxy.ConsoleApp\VnListProxy.ConsoleApp.fsproj", "{44FAF902-85B0-4187-9060-0EFED126AEFF}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "VndbReProxy.ConsoleApp", "VndbReProxy.ConsoleApp\VndbReProxy.ConsoleApp.fsproj", "{44FAF902-85B0-4187-9060-0EFED126AEFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
