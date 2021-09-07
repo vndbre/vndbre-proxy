@@ -105,7 +105,7 @@ module Response =
                 StatusCodes.Status401Unauthorized
             else
                 StatusCodes.Status400BadRequest
-        | Ok _ -> StatusCodes.Status200OK
+        | Ok _ -> StatusCodes.Status204NoContent
         | Unknown _ -> StatusCodes.Status501NotImplemented
         | InternalError _ -> StatusCodes.Status500InternalServerError
 
@@ -115,9 +115,9 @@ module Response =
         | Error json ->
             writer.WritePropertyName("data")
             writer.WriteRawValue(json)
-        | Ok -> ()
-        | Unknown raw -> writer.WriteString("raw", raw)
-        | InternalError error -> writer.WriteString("error", string error)
+        | Ok -> writer.WriteNull("data")
+        | Unknown raw -> writer.WriteString("data", raw)
+        | InternalError error -> writer.WriteString("data", string error)
 
     let toJson t =
         use ms = new MemoryStream()
