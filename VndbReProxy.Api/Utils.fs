@@ -24,6 +24,11 @@ let inject3<'T1, 'T2, 'T3> (handler: _ -> _ -> _ -> HttpHandler) : HttpHandler =
         let s3 = ctx.GetService<'T3>()
         handler s1 s2 s3 next ctx
 
+let inject4<'T1, 'T2, 'T3, 'T4> (handler: _ -> _ -> _ -> _ -> HttpHandler) : HttpHandler =
+    fun next ctx ->
+        let s1 = ctx.GetService<'T1>()
+        inject3<'T2, 'T3, 'T4> (handler s1) next ctx
+
 let jsonFromString str : HttpHandler =
     fun _ ctx ->
         ctx.SetContentType MediaTypeNames.Application.Json
