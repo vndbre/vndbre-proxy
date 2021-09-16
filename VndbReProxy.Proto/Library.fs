@@ -82,6 +82,7 @@ module Response =
         | Results of json
         | Error of json
         | Ok
+        | DbStats of json
         | Unknown of raw
         | InternalError of error
 
@@ -98,6 +99,7 @@ module Response =
         | StartsWithOrdinal "results" j -> j |> trim |> Results
         | StartsWithOrdinal "error" j -> j |> trim |> Error
         | StartsWithOrdinal "ok" _ -> Ok
+        | StartsWithOrdinal "dbstats" j -> j |> trim |> DbStats
         | _ -> Unknown ^ trim message
 
     let parseResult =
@@ -110,6 +112,7 @@ module Response =
         | Results _ -> "results"
         | Error _ -> "error"
         | Ok _ -> "ok"
+        | DbStats _ -> "dbstats"
         | Unknown _ -> "unknown"
         | InternalError _ -> "internalerror"
 
@@ -122,13 +125,15 @@ module Response =
             else
                 StatusCodes.Status400BadRequest
         | Ok _ -> StatusCodes.Status204NoContent
+        | DbStats _ -> StatusCodes.Status200OK
         | Unknown _ -> StatusCodes.Status501NotImplemented
         | InternalError _ -> StatusCodes.Status500InternalServerError
 
     let writeData (writer: Utf8JsonWriter) =
         function
         | Results json
-        | Error json ->
+        | Error json
+        | DbStats json ->
             writer.WritePropertyName("data")
             writer.WriteRawValue(json)
         | Ok -> writer.WriteNull("data")
