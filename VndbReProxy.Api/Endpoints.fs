@@ -2,7 +2,7 @@
 
 open System
 open System.IO
-open FSharp.Control.Tasks
+open FSharp.Control
 open Giraffe
 open Giraffe.EndpointRouting
 open Giraffe.QueryReader

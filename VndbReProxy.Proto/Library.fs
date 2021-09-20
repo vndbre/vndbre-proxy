@@ -6,7 +6,7 @@ open System.Net.Sockets
 open System.Text
 open System.Text.Json
 open System.Threading.Tasks
-open FSharp.Control.Tasks
+open FSharp.Control
 open Microsoft.AspNetCore.Http
 
 module Proto =
