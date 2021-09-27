@@ -13,10 +13,10 @@ open VndbReProxy.Proto
 let v1vndbHandler (login: string option) (password: string option) : HttpHandler =
     inject1<ILogger<Undefined>>
     ^ fun logger next ctx ->
-        let login, password =
+        let lp =
             match login, password with
-            | Some login, Some password -> login, password
-            | _ -> undefined
+            | Some login, Some password -> Some(login, password)
+            | _ -> None
 
         task {
             let bodyStream = ctx.Request.Body
@@ -27,8 +27,7 @@ let v1vndbHandler (login: string option) (password: string option) : HttpHandler
             use conn =
                 Connection.connect Connection.defaultConf
 
-            let lq =
-                Request.login Connection.defaultConf login password
+            let lq = Request.login Connection.defaultConf lp
 
             let s = conn.GetStream()
             let! w = Request.send s lq

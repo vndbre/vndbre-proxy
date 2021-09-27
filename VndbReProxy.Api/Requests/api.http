@@ -3,6 +3,16 @@ POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
 get quote basic (id>=1) {"results":1}
 
 ###
+POST {{host}}/api/v1/vndb
+
+get vn basic,anime,details (id>=1) {"results":20}
+
+###
+POST {{host}}/api/v1/vndb
+
+get quote basic (id>=1) {"results":1}
+
+####
 POST {{host}}/api/v1/vndb?login={{login}}&password=wrong
 
 get quote basic (id>=1) {"results":1}
@@ -10,7 +20,7 @@ get quote basic (id>=1) {"results":1}
 ###
 POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
 
-get quote basic (id>=1) {"results":2}
+get quote basic (id>=1) {"results":20}
 
 ###
 POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}

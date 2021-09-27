@@ -165,7 +165,7 @@ module Connection =
           Port = 19534
           PortTls = 19535
           Client = "vn-list"
-          ClientVer = "0.0.1" }
+          ClientVer = "0.0.4" }
 
     let connect conf =
         let a = new TcpClient(conf.Host, conf.Port)
@@ -174,8 +174,11 @@ module Connection =
 module Request =
     type t = string
 
-    let login (conf: Connection.conf) login password : t =
-        $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
+    let login (conf: Connection.conf) lp : t =
+        match lp with
+        | Some (login, password) ->
+            $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
+        | None -> $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\"}}"
 
     let private stopByteBuff = [| Proto.stopByte |]
 
