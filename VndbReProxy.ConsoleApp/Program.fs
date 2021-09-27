@@ -6,8 +6,6 @@ let main _ =
     use client =
         Connection.connect Connection.defaultConf
 
-    let l = VndbReProxy.Prelude.Utils.a ()
-
     let login =
         match Console.ReadLine() with
         | "" -> "misterptits"

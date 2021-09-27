@@ -8,10 +8,10 @@ module Utils =
         val d: StringBuilder
         new(()) = { d = StringBuilder("login {", 256) }
 
-        member this.Yield _ = ()
+        member inline this.Yield _ = ()
 
         [<CustomOperation("protocol")>]
-        member this.Protocol(_, value: int) =
+        member inline this.Protocol(_, value: int) =
             this
                 .d
                 .Append("\"protocol\":")
@@ -19,7 +19,7 @@ module Utils =
                 .Append(",")
 
         [<CustomOperation("client")>]
-        member this.Client(_, value: string) =
+        member inline this.Client(_, value: string) =
             this
                 .d
                 .Append("\"client\":")
@@ -28,11 +28,36 @@ module Utils =
                 .Append("\"")
                 .Append(",")
 
-        member this.Run _ =
+        [<CustomOperation("clientver")>]
+        member inline this.ClientVer(_, value: string) =
+            this
+                .d
+                .Append("\"clientver\":")
+                .Append(value)
+                .Append(",")
+
+        [<CustomOperation("username")>]
+        member inline this.Username(_, value: string) =
+            this
+                .d
+                .Append("\"username\":")
+                .Append("\"")
+                .Append(value)
+                .Append("\"")
+                .Append(",")
+
+        [<CustomOperation("password")>]
+        member inline this.Password(_, value: string) =
+            this
+                .d
+                .Append("\"password\":")
+                .Append("\"")
+                .Append(value)
+                .Append("\"")
+                .Append(",")
+
+        member inline this.Run _ =
             this.d.Remove(this.d.Length - 1, 1).Append("}")
             |> string
 
     let inline loginBuilder () = LoginBuilder(())
-
-    let a () = loginBuilder () { protocol 1
-                                 client "ars" }
