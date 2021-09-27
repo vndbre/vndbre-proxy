@@ -12,7 +12,9 @@ let main _ =
         | s -> s
 
     let password = Console.ReadLine()
-    let stream = client.GetStream()
+
+    use stream =
+        Connection.tlsAuthenticate Connection.defaultConf.Host client
 
     let requests =
         [ Request.login
