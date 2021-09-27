@@ -4,7 +4,7 @@ open VndbReProxy.Proto
 [<EntryPoint>]
 let main _ =
     use client =
-        Connection.connect Connection.defaultConf
+        Connection.client Tls Connection.defaultConf
 
     let login =
         match Console.ReadLine() with
@@ -12,7 +12,9 @@ let main _ =
         | s -> s
 
     let password = Console.ReadLine()
-    let stream = client.GetStream()
+
+    use stream =
+        Connection.stream Tls Connection.defaultConf client
 
     let requests =
         [ Request.login

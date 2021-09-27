@@ -10,33 +10,54 @@ open Microsoft.Extensions.Logging
 open VndbReProxy.Api.Utils
 open VndbReProxy.Proto
 
+type private v1vndbHandler = V1vndbHandler
+
 let v1vndbHandler (login: string option) (password: string option) : HttpHandler =
-    inject1<ILogger<Undefined>>
+    inject1<ILogger<v1vndbHandler>>
     ^ fun logger next ctx ->
+        logger.LogInformation("Started request handling")
+
         let lp =
             match login, password with
-            | Some login, Some password -> Some(login, password)
-            | _ -> None
+            | Some login, Some password ->
+                logger.LogTrace("Using login and password")
+                Some(login, password)
+            | _ ->
+                logger.LogTrace("Not using login and password")
+                None
 
         task {
             let bodyStream = ctx.Request.Body
             use sr = new StreamReader(bodyStream)
+            logger.LogTrace("Started body reading")
+
             let! body = sr.ReadToEndAsync()
-            logger.LogInformation(string DateTimeOffset.Now)
+            logger.LogTrace("Ended body reading")
 
-            use conn =
-                Connection.connect Connection.defaultConf
+            logger.LogTrace("Create connection (client)")
 
-            let lq = Request.login Connection.defaultConf lp
+            use client =
+                Connection.client Tls Connection.defaultConf
 
-            let s = conn.GetStream()
-            let! w = Request.send s lq
+            logger.LogTrace("Create connection (stream)")
+
+            use stream =
+                Connection.stream Tls Connection.defaultConf client
+
+            logger.LogTrace("Send login command")
+
+            let! w =
+                Request.login Connection.defaultConf lp
+                |> Request.send stream
 
             match w with
             | Response.t.Ok ->
-                let! ans = Request.send s body
+                let! ans = Request.send stream body
+                logger.LogDebug($"{Response.toResponseName ans} Response")
                 return! returnResponse false ans next ctx
-            | _ -> return! returnResponse true w next ctx
+            | _ ->
+                logger.LogDebug("Auth failed")
+                return! returnResponse true w next ctx
         }
 
 let endpoints =

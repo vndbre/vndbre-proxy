@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open System.Net.Security
 open System.Net.Sockets
 open System.Text
 open System.Text.Json
@@ -16,7 +17,7 @@ module Proto =
 
     let stopByte = byte 0x04
 
-    let readByte buff (stream: NetworkStream) =
+    let readByte buff (stream: Stream) =
         task {
             let! cnt = stream.ReadAsync(buff, 0, 1)
 
@@ -152,6 +153,10 @@ module Response =
 
         Encoding.UTF8.GetString(ms.ToArray())
 
+type IsTls =
+    | NoTls
+    | Tls
+
 module Connection =
     type conf =
         { Host: string
@@ -167,9 +172,34 @@ module Connection =
           Client = "vndbre-proxy"
           ClientVer = "0.0.5" }
 
-    let connect conf =
-        let a = new TcpClient(conf.Host, conf.Port)
-        a
+    let client isTls conf =
+        new TcpClient(
+            conf.Host,
+            match isTls with
+            | NoTls -> conf.Port
+            | Tls -> conf.PortTls
+        )
+
+    let private connectNoTls (client: TcpClient) = client.GetStream()
+
+    let private connectTls conf (client: TcpClient) =
+        let ValidateServerCertificate _sender _certificate _chain _sslPolicyErrors = true
+
+        let sslStream =
+            new SslStream(
+                client.GetStream(),
+                false,
+                RemoteCertificateValidationCallback(ValidateServerCertificate),
+                null
+            )
+
+        sslStream.AuthenticateAsClient(conf.Host)
+        sslStream
+
+    let stream isTls conf client : Stream =
+        match isTls with
+        | NoTls -> upcast connectNoTls client
+        | Tls -> upcast connectTls conf client
 
 module Request =
     open VndbReProxy.Prelude.Utils
@@ -195,7 +225,7 @@ module Request =
 
     let private stopByteBuff = [| Proto.stopByte |]
 
-    let private write (stream: NetworkStream) (a: t) =
+    let private write (stream: Stream) (a: t) =
         try
             task {
                 let buf = Encoding.UTF8.GetBytes a
@@ -207,7 +237,7 @@ module Request =
         with
         | _ -> Task.FromResult ^ Error ^ Response.error.SendError
 
-    let send (stream: NetworkStream) (a: t) =
+    let send (stream: Stream) (a: t) =
         task {
             match! write stream a with
             | Error err -> return Response.t.InternalError err
