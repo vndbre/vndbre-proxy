@@ -33,7 +33,9 @@ module Utils =
             this
                 .d
                 .Append("\"clientver\":")
+                .Append("\"")
                 .Append(value)
+                .Append("\"")
                 .Append(",")
 
         [<CustomOperation("username")>]
