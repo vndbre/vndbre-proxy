@@ -31,7 +31,8 @@ jobs:
       with:
         push: true
         tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_8c401bc24a1c46bea1ccc541f08a9c16 }}/prekel/vndbre:${{ github.sha }}
-        file: ./Dockerfile
+        file: ./VndbReProxy.Api/Dockerfile
+        context: .
 
   deploy:
     runs-on: ubuntu-latest
