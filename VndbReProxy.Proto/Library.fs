@@ -153,6 +153,10 @@ module Response =
 
         Encoding.UTF8.GetString(ms.ToArray())
 
+type IsTls =
+    | NoTls
+    | Tls
+
 module Connection =
     type conf =
         { Host: string
@@ -168,11 +172,17 @@ module Connection =
           Client = "vn-list"
           ClientVer = "0.0.4" }
 
-    let connect conf =
-        let a = new TcpClient(conf.Host, conf.PortTls)
-        a
+    let client isTls conf =
+        new TcpClient(
+            conf.Host,
+            match isTls with
+            | NoTls -> conf.Port
+            | Tls -> conf.PortTls
+        )
 
-    let tlsAuthenticate (host: string) (client: TcpClient) =
+    let private connectNoTls (client: TcpClient) = client.GetStream()
+
+    let private connectTls conf (client: TcpClient) =
         let ValidateServerCertificate _sender _certificate _chain _sslPolicyErrors = true
 
         let sslStream =
@@ -183,8 +193,13 @@ module Connection =
                 null
             )
 
-        sslStream.AuthenticateAsClient(host)
+        sslStream.AuthenticateAsClient(conf.Host)
         sslStream
+
+    let stream isTls conf client : Stream =
+        match isTls with
+        | NoTls -> upcast connectNoTls client
+        | Tls -> upcast connectTls conf client
 
 module Request =
     type t = string
