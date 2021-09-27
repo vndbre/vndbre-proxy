@@ -164,21 +164,34 @@ module Connection =
         { Host = "api.vndb.org"
           Port = 19534
           PortTls = 19535
-          Client = "vn-list"
-          ClientVer = "0.0.4" }
+          Client = "vndbre-proxy"
+          ClientVer = "0.0.5" }
 
     let connect conf =
         let a = new TcpClient(conf.Host, conf.Port)
         a
 
 module Request =
+    open VndbReProxy.Prelude.Utils
+
     type t = string
 
     let login (conf: Connection.conf) lp : t =
         match lp with
-        | Some (login, password) ->
-            $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\",\"username\":\"%s{login}\",\"password\":\"%s{password}\"}}"
-        | None -> $"login {{\"protocol\":1,\"client\":\"%s{conf.Client}\",\"clientver\":\"%s{conf.ClientVer}\"}}"
+        | Some (login, password') ->
+            loginBuilder () {
+                protocol 1
+                client conf.Client
+                clientver conf.ClientVer
+                username login
+                password password'
+            }
+        | None ->
+            loginBuilder () {
+                protocol 1
+                client conf.Client
+                clientver conf.ClientVer
+            }
 
     let private stopByteBuff = [| Proto.stopByte |]
 
