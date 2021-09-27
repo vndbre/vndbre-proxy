@@ -28,8 +28,6 @@ jobs:
       contents: read
       packages: write
 
-    outputs: 
-      digest: ${{ steps.docker_build.outputs.digest }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -61,7 +59,7 @@ jobs:
           context: .
           file: VndbReProxy.Api/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ github.sha }}
+          tags: ghcr.io/vndbre/vndbre-proxy:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
   
   deploy:
