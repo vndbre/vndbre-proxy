@@ -61,7 +61,7 @@ jobs:
           context: .
           file: VndbReProxy.Api/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
   
   deploy:
@@ -79,5 +79,5 @@ jobs:
         app-name: 'vndbre-proxy'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_f340412bf4804cfdbbf84b7e336c5261 }}
-        images: 'ghcr.io/vndbre/vndbre-proxy@${{ needs.build.outputs.digest }}'
+        images: 'ghcr.io/vndbre/vndbre-proxy:${{ github.sha }}'
 
