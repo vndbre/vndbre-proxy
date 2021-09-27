@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module VndbReProxy
+module VndbReProxyPrelude
 
 let inline (^) a b = a b
 
