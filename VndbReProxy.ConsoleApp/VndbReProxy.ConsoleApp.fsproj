@@ -11,11 +11,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include=".dockerignore" />
-      <Content Include="Dockerfile" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\VndbReProxy.Proto\VndbReProxy.Proto.fsproj" />
     </ItemGroup>
 

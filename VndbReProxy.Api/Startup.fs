@@ -9,7 +9,10 @@ open Microsoft.Extensions.Hosting
 open Giraffe
 open Giraffe.EndpointRouting
 
-type Startup(_configuration: IConfiguration) =
+open VndbReProxy.Api.Services.Tags
+open VndbReProxy.Api.Services.Traits
+
+type Startup(configuration: IConfiguration) =
     member _.ConfigureServices(services: IServiceCollection) =
         services.AddCors
             (fun options ->
@@ -32,6 +35,12 @@ type Startup(_configuration: IConfiguration) =
         |> ignore<IServiceCollection>
 
         services.AddGiraffe()
+        |> ignore<IServiceCollection>
+
+        services.AddTags("https://dl.vndb.org/dump/vndb-tags-latest.json.gz")
+        |> ignore<IServiceCollection>
+
+        services.AddTraits("https://dl.vndb.org/dump/vndb-traits-latest.json.gz")
         |> ignore<IServiceCollection>
 
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
