@@ -18,4 +18,4 @@ open Microsoft.Extensions.DependencyInjection
 
 type IServiceCollection with
     member this.AddTraits(url) =
-        this.AddSingleton<TraitsService>(fun _ -> TraitsService(url))
+        this.AddSingleton<IDumpService<int, Trait>, TraitsService>(fun _ -> TraitsService(url))

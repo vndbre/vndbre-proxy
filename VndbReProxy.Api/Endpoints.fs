@@ -1,14 +1,15 @@
 ﻿module VndbReProxy.Api.Endpoints
 
-open System
 open System.IO
 open FSharp.Control
 open Giraffe
 open Giraffe.EndpointRouting
 open Giraffe.QueryReader
+open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Logging
 open VndbReProxy.Api.Services
 open VndbReProxy.Api.Services.Tags
+open VndbReProxy.Api.Services.Traits
 open VndbReProxy.Api.Utils
 open VndbReProxy.Proto
 
@@ -62,19 +63,47 @@ let v1vndbHandler (login: string option) (password: string option) : HttpHandler
                 return! returnResponse true w next ctx
         }
 
-let tagsHandler (id: int) : HttpHandler =
-    inject1<IDumpService<_, Tag>>
+let tagsHandler (ids: int array) : HttpHandler =
+    inject1<IDumpService<int, Tag>>
     ^ fun tagsService next ctx ->
         task {
-            let! a = tagsService.GetOrDownload(id)
+            let idHead = ids |> Array.head
+            let idTail = ids |> Array.tail
 
-            match a with
-            | Ok item -> return! json item next ctx
-            | Error _ -> return undefined
+            let! tagHead = tagsService.GetOrDownload idHead
+
+            let tagTail =
+                idTail
+                |> Array.map tagsService.TryGet
+                |> Array.choose id
+
+            match tagHead with
+            | Ok hd -> return! json (Array.append [| hd |] tagTail) next ctx
+            | Error _ -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
+        }
+
+let traitsHandler (ids: int array) : HttpHandler =
+    inject1<IDumpService<int, Trait>>
+    ^ fun traitService next ctx ->
+        task {
+            let idHead = ids |> Array.head
+            let idTail = ids |> Array.tail
+
+            let! traitHead = traitService.GetOrDownload idHead
+
+            let tagTail =
+                idTail
+                |> Array.map traitService.TryGet
+                |> Array.choose id
+
+            match traitHead with
+            | Ok hd -> return! json (Array.append [| hd |] tagTail) next ctx
+            | Error _ -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
         }
 
 let endpoints =
     [ POST
       =@> route "/api/v1/vndb"
           ^ Query.read ("login", "password", v1vndbHandler)
-      GET =@> routef "/api/v1/tags/%i" tagsHandler ]
+      POST =@> routeArray "/api/v1/tags" tagsHandler
+      POST =@> routeArray "/api/v1/traits" traitsHandler ]

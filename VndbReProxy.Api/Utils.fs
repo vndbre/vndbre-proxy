@@ -1,7 +1,9 @@
 ﻿module VndbReProxy.Api.Utils
 
 open System.Net.Mime
+open FSharp.Control
 open Giraffe
+open Giraffe.EndpointRouting
 open VndbReProxy.Proto
 
 let (=@>) a b = a [ b ]
@@ -38,3 +40,17 @@ let returnResponse isAuth (t: Response.t) : HttpHandler =
     fun next ctx ->
         ctx.SetStatusCode(Response.toHttpCode isAuth t)
         jsonFromString (Response.toJson t) next ctx
+
+let emptyResponse code : HttpHandler =
+    fun _next ctx ->
+        ctx.SetStatusCode(code)
+        ctx.WriteStringAsync("")
+
+let routeArray<'T> path (handler: 'T array -> HttpHandler) =
+    route
+        path
+        (fun next ctx ->
+            task {
+                let! a = ctx.BindJsonAsync<'T array>()
+                return! (handler a) next ctx
+            })
