@@ -33,3 +33,6 @@ POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
 dbstats
 
 ###
+GET {{host}}/api/v1/tags/123
+
+###

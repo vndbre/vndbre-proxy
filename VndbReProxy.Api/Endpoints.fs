@@ -7,6 +7,8 @@ open Giraffe
 open Giraffe.EndpointRouting
 open Giraffe.QueryReader
 open Microsoft.Extensions.Logging
+open VndbReProxy.Api.Services
+open VndbReProxy.Api.Services.Tags
 open VndbReProxy.Api.Utils
 open VndbReProxy.Proto
 
@@ -60,7 +62,19 @@ let v1vndbHandler (login: string option) (password: string option) : HttpHandler
                 return! returnResponse true w next ctx
         }
 
+let tagsHandler (id: int) : HttpHandler =
+    inject1<IDumpService<_, Tag>>
+    ^ fun tagsService next ctx ->
+        task {
+            let! a = tagsService.GetOrDownload(id)
+
+            match a with
+            | Ok item -> return! json item next ctx
+            | Error _ -> return undefined
+        }
+
 let endpoints =
     [ POST
       =@> route "/api/v1/vndb"
-          ^ Query.read ("login", "password", v1vndbHandler) ]
+          ^ Query.read ("login", "password", v1vndbHandler)
+      GET =@> routef "/api/v1/tags/%i" tagsHandler ]
