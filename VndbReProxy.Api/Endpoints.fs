@@ -40,12 +40,12 @@ let v1vndbHandler (login: string option) (password: string option) : HttpHandler
             logger.LogTrace("Create connection (client)")
 
             use client =
-                Connection.client Tls Connection.defaultConf
+                Connection.client Connection.Tls Connection.defaultConf
 
             logger.LogTrace("Create connection (stream)")
 
             use stream =
-                Connection.stream Tls Connection.defaultConf client
+                Connection.stream Connection.Tls Connection.defaultConf client
 
             logger.LogTrace("Send login command")
 
@@ -101,9 +101,12 @@ let traitsHandler (ids: int array) : HttpHandler =
             | Error _ -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
         }
 
+let testHandler (n: int) : HttpHandler = undefined
+
 let endpoints =
     [ POST
       =@> route "/api/v1/vndb"
           ^ Query.read ("login", "password", v1vndbHandler)
       POST =@> routeArray "/api/v1/tags" tagsHandler
-      POST =@> routeArray "/api/v1/traits" traitsHandler ]
+      POST =@> routeArray "/api/v1/traits" traitsHandler
+      POST =@> routef "%d" testHandler ]
