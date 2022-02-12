@@ -24,10 +24,10 @@ let v1vndbHandler (login: string option) (password: string option) : HttpHandler
             match login, password with
             | Some login, Some password ->
                 logger.LogTrace("Using login and password")
-                Some(login, password)
+                Request.Password(login, password)
             | _ ->
                 logger.LogTrace("Not using login and password")
-                None
+                Request.Anon
 
         task {
             let bodyStream = ctx.Request.Body

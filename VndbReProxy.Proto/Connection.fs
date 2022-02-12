@@ -20,7 +20,7 @@ let defaultConf =
       Port = 19534
       PortTls = 19535
       Client = "vndbre-proxy"
-      ClientVer = "0.0.5" }
+      ClientVer = "0.1.0" }
 
 let client isTls conf =
     new TcpClient(

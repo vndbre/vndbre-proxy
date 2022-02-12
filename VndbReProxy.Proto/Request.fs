@@ -8,9 +8,24 @@ open VndbReProxy.Prelude.Utils
 
 type t = string
 
+type LoginParams =
+    | Anon
+    | Password of login: string * password: string
+    | CreateSession of login: string * password: string
+    | SessionToken of sessionToken: string
+
 let login (conf: Connection.conf) lp : t =
     match lp with
-    | Some (login, password') ->
+    | CreateSession (login, password') ->
+        loginBuilder () {
+            protocol 1
+            client conf.Client
+            clientver conf.ClientVer
+            username login
+            password password'
+            createsession true
+        }
+    | Password (login, password') ->
         loginBuilder () {
             protocol 1
             client conf.Client
@@ -18,7 +33,14 @@ let login (conf: Connection.conf) lp : t =
             username login
             password password'
         }
-    | None ->
+    | SessionToken sessionToken ->
+        loginBuilder () {
+            protocol 1
+            client conf.Client
+            clientver conf.ClientVer
+            sessiontoken sessionToken
+        }
+    | Anon ->
         loginBuilder () {
             protocol 1
             client conf.Client
