@@ -28,10 +28,13 @@ type Startup(_configuration: IConfiguration) =
         services.AddRouting()
         |> ignore<IServiceCollection>
 
-        services.AddAuthorization()
-        |> ignore<IServiceCollection>
+        //services.AddAuthorization()
+        //|> ignore<IServiceCollection>
 
         services.AddLogging()
+        |> ignore<IServiceCollection>
+
+        services.AddResponseCaching()
         |> ignore<IServiceCollection>
 
         services.AddGiraffe()
@@ -52,6 +55,7 @@ type Startup(_configuration: IConfiguration) =
             .UseHttpsRedirection()
             .UseRouting()
             .UseCors()
-            .UseAuthorization()
+            //.UseAuthorization()
+            .UseResponseCaching()
             .UseEndpoints(fun endpoints -> endpoints.MapGiraffeEndpoints(Endpoints.endpoints))
         |> ignore<IApplicationBuilder>

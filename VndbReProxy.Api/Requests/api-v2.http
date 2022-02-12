@@ -59,5 +59,6 @@ get quote basic (id>=1) {"results":1}
 POST {{host}}/api/v2/vndb
 username: {{login}}
 sessiontoken: {{sessiontoken}}
+Cache-Control: no-cache
 
 set ulist 17 {"vote":100}
