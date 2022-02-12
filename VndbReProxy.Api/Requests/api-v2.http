@@ -51,8 +51,8 @@ POST {{host}}/api/v2/traits
 ###
 POST {{host}}/api/v2/login
 
-{ username: "{{login}}",
-  password: "{{password}}" }
+{ "username": "{{login}}",
+  "password": "{{password}}" }
 
 ###
 POST {{host}}/api/v2/vndb
@@ -67,3 +67,8 @@ username: {{login}}
 sessiontoken: {{sessiontoken}}
 
 set ulist 17 {"vote":100}
+
+###
+POST {{host}}/api/v2/logout
+username: {{login}}
+sessiontoken: {{sessiontoken}}
