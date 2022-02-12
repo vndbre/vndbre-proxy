@@ -1,45 +1,44 @@
-POST {{host}}/api/v2/vndb
-Authorization: arsta
+POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
 
 get quote basic (id>=1) {"results":1}
 
 ###
-POST {{host}}/api/v2/vndb
+POST {{host}}/api/v1/vndb
 
 get vn basic,anime,details (id>=1) {"results":20}
 
 ###
-POST {{host}}/api/v2/vndb
+POST {{host}}/api/v1/vndb
 
 get quote basic (id>=1) {"results":1}
 
 ####
-POST {{host}}/api/v2/vndb
+POST {{host}}/api/v1/vndb?login={{login}}&password=wrong
 
 get quote basic (id>=1) {"results":1}
 
 ###
-POST {{host}}/api/v2/vndb
+POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
 
 get quote basic (id>=1) {"results":20}
 
 ###
-POST {{host}}/api/v2/vndb
+POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
 
 get vn basic (firstchar="ze")
 
 ###
-POST {{host}}/api/v2/vndb
+POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
 
 dbstats
 
 ###
-POST {{host}}/api/v2/tags
+POST {{host}}/api/v1/tags
 
 [1,2,3,34]
 
 ###
-POST {{host}}/api/v2/traits
+POST {{host}}/api/v1/traits
 
 [1,2,34]
 

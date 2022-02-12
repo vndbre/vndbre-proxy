@@ -27,7 +27,7 @@ type t =
 
 let (|StartsWithOrdinal|_|) str (message: string) =
     if message.StartsWith(str, StringComparison.Ordinal) then
-        Some ^ message.Substring(str.Length)
+        Some ^ message.Substring(str.Length).Trim()
     else
         None
 

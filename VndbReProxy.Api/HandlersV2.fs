@@ -3,6 +3,7 @@
 open System.IO
 open FSharp.Control
 open Giraffe
+open Microsoft.AspNetCore.Http
 open VndbReProxy.Api.Utils
 open VndbReProxy.Proto
 open System
@@ -35,16 +36,19 @@ module Login =
                 | _ -> return! returnResponse true w next ctx
             }
 
+let private loginParamsFromHeaders (ctx: HttpContext) =
+    let username = ctx.TryGetRequestHeader "username"
+    let st = ctx.TryGetRequestHeader "sessiontoken"
+
+    match username, st with
+    | Some username, Some sessiontoken -> Rq.SessionToken(username, sessiontoken)
+    | _ -> Rq.Anon
+
 module Logout =
     let handler: HttpHandler =
         fun next ctx ->
             task {
-                let st = ctx.TryGetRequestHeader "sessiontoken"
-
-                let lp =
-                    match st with
-                    | Some sessiontoken -> Rq.SessionToken sessiontoken
-                    | _ -> Rq.Anon
+                let lp = loginParamsFromHeaders ctx
 
                 use client = C.client C.Tls C.defaultConf
 
@@ -97,12 +101,7 @@ module Vndb =
     let handler: HttpHandler =
         fun next ctx ->
             task {
-                let st = ctx.TryGetRequestHeader "sessiontoken"
-
-                let lp =
-                    match st with
-                    | Some sessiontoken -> Rq.SessionToken sessiontoken
-                    | _ -> Rq.Anon
+                let lp = loginParamsFromHeaders ctx
 
                 use sr = new StreamReader(ctx.Request.Body)
                 use client = C.client C.Tls C.defaultConf
@@ -114,6 +113,6 @@ module Vndb =
                 | Response.t.Ok ->
                     let! body = sr.ReadToEndAsync()
                     let! ans = Request.send stream body
-                    return! json (responseToDto ans None) next ctx
+                    return! jsonFromString (responseToDto ans None |> responseDtoToJson) next ctx
                 | _ -> return! returnResponse true loginResponse next ctx
             }

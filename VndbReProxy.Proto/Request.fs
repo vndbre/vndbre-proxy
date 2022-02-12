@@ -12,7 +12,7 @@ type LoginParams =
     | Anon
     | Password of login: string * password: string
     | CreateSession of login: string * password: string
-    | SessionToken of sessionToken: string
+    | SessionToken of login: string * sessionToken: string
 
 let login (conf: Connection.conf) lp : t =
     match lp with
@@ -23,7 +23,7 @@ let login (conf: Connection.conf) lp : t =
             clientver conf.ClientVer
             username login
             password password'
-            createsession true
+            createsession
         }
     | Password (login, password') ->
         loginBuilder () {
@@ -33,11 +33,12 @@ let login (conf: Connection.conf) lp : t =
             username login
             password password'
         }
-    | SessionToken sessionToken ->
+    | SessionToken (login, sessionToken) ->
         loginBuilder () {
             protocol 1
             client conf.Client
             clientver conf.ClientVer
+            username login
             sessiontoken sessionToken
         }
     | Anon ->

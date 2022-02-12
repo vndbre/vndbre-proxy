@@ -1,45 +1,63 @@
-POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
+POST {{host}}/api/v2/vndb
 
 get quote basic (id>=1) {"results":1}
 
 ###
-POST {{host}}/api/v1/vndb
+POST {{host}}/api/v2/vndb
 
 get vn basic,anime,details (id>=1) {"results":20}
 
 ###
-POST {{host}}/api/v1/vndb
-
-get quote basic (id>=1) {"results":1}
-
-####
-POST {{host}}/api/v1/vndb?login={{login}}&password=wrong
+POST {{host}}/api/v2/vndb
 
 get quote basic (id>=1) {"results":1}
 
 ###
-POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
+POST {{host}}/api/v2/vndb
+
+get quote basic (id>=1) {"results":1}
+
+###
+POST {{host}}/api/v2/vndb
 
 get quote basic (id>=1) {"results":20}
 
 ###
-POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
+POST {{host}}/api/v2/vndb
 
 get vn basic (firstchar="ze")
 
 ###
-POST {{host}}/api/v1/vndb?login={{login}}&password={{password}}
+POST {{host}}/api/v2/vndb
 
 dbstats
 
 ###
-POST {{host}}/api/v1/tags
+POST {{host}}/api/v2/tags
 
 [1,2,3,34]
 
 ###
-POST {{host}}/api/v1/traits
+POST {{host}}/api/v2/traits
 
 [1,2,34]
 
 ###
+POST {{host}}/api/v2/login
+
+{ username: "{{login}}",
+  password: "{{password}}" }
+
+###
+POST {{host}}/api/v2/vndb
+username: {{login}}
+sessiontoken: {{sessiontoken}}
+
+get quote basic (id>=1) {"results":1}
+
+###
+POST {{host}}/api/v2/vndb
+username: {{login}}
+sessiontoken: {{sessiontoken}}
+
+set ulist 17 {"vote":100}

@@ -70,12 +70,12 @@ module Utils =
                 .Append(",")
 
         [<CustomOperation("createsession")>]
-        member inline this.CreateSession(_, value: bool) =
+        member inline this.CreateSession _ =
             this
                 .d
                 .Append("\"createsession\":")
                 .Append("\"")
-                .Append(value)
+                .Append("true")
                 .Append("\"")
                 .Append(",")
 
