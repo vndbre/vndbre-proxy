@@ -6,13 +6,13 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
-open Giraffe
-open Giraffe.EndpointRouting
+open global.Giraffe
+open VndbReProxy.Giraffe.EndpointRouting
 
 open VndbReProxy.Api.Services.Tags
 open VndbReProxy.Api.Services.Traits
 
-type Startup(configuration: IConfiguration) =
+type Startup(_configuration: IConfiguration) =
     member _.ConfigureServices(services: IServiceCollection) =
         services.AddCors
             (fun options ->

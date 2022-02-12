@@ -18,16 +18,18 @@
 
     <ItemGroup>
         <Compile Include="Utils.fs" />
-        <Compile Include="EndpointRouting.fs" />
         <Compile Include="Services\DumpService.fs" />
         <Compile Include="Services\TagsService.fs" />
         <Compile Include="Services\TraitsService.fs" />
+        <Compile Include="HandlersV1.fs" />
+        <Compile Include="HandlersV2.fs" />
         <Compile Include="Endpoints.fs" />
         <Compile Include="Startup.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\VndbReProxy.Giraffe\VndbReProxy.Giraffe.fsproj" />
       <ProjectReference Include="..\VndbReProxy.Prelude\VndbReProxy.Prelude.fsproj" />
       <ProjectReference Include="..\VndbReProxy.Proto\VndbReProxy.Proto.fsproj" />
     </ItemGroup>

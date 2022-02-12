@@ -1,5 +1,5 @@
 ﻿// https://github.com/giraffe-fsharp/Giraffe/blob/84525b2e23ad9777b8c02cbe43d7bcdc77c453a3/src/Giraffe/EndpointRouting.fs
-namespace VndbReProxy.Api.Giraffe.EndpointRouting
+namespace VndbReProxy.Giraffe.EndpointRouting
 
 open System
 open System.Net
