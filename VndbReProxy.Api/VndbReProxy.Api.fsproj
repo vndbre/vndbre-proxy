@@ -18,6 +18,7 @@
 
     <ItemGroup>
         <Compile Include="Utils.fs" />
+        <Compile Include="EndpointRouting.fs" />
         <Compile Include="Services\DumpService.fs" />
         <Compile Include="Services\TagsService.fs" />
         <Compile Include="Services\TraitsService.fs" />
