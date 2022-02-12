@@ -3,6 +3,12 @@ POST {{host}}/api/v2/vndb
 get quote basic (id>=1) {"results":1}
 
 ###
+
+POST {{host}}/api/v2/vndb-set
+
+get quote basic (id>=1) {"results":1}
+
+###
 POST {{host}}/api/v2/vndb
 
 get vn basic,anime,details (id>=1) {"results":20}
@@ -56,9 +62,8 @@ sessiontoken: {{sessiontoken}}
 get quote basic (id>=1) {"results":1}
 
 ###
-POST {{host}}/api/v2/vndb
+POST {{host}}/api/v2/vndb-set
 username: {{login}}
 sessiontoken: {{sessiontoken}}
-Cache-Control: no-cache
 
 set ulist 17 {"vote":100}

@@ -17,7 +17,7 @@ let endpointsV1 =
 let endpointsV2 =
     let nc =
         [ POST
-          =@> route "/api/v2/vndb-set" HandlersV2.Vndb.handler
+          =@> route "/api/v2/vndb-set" (HandlersV2.Vndb.handler true)
           POST
           =@> route "/api/v2/login" HandlersV2.Login.handler
           POST
@@ -26,7 +26,7 @@ let endpointsV2 =
 
     let c =
         [ POST
-          =@> route "/api/v2/vndb" HandlersV2.Vndb.handler
+          =@> route "/api/v2/vndb" (HandlersV2.Vndb.handler false)
           POST
           =@> routeArray "/api/v2/tags" HandlersV1.tagsHandler
           POST

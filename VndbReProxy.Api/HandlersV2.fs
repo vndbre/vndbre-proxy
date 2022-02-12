@@ -75,7 +75,7 @@ module Vndb =
     type ResponseDto =
         { response: string
           data: Rs.InnerData
-          cached: DateTimeOffset option }
+          cached: DateTimeOffset option option }
 
     let responseDtoToJson dto =
         use ms = new MemoryStream()
@@ -87,7 +87,10 @@ module Vndb =
             writeInnerData writer dto.data
 
             dto.cached
-            |> Option.iter (fun cached -> writer.WriteString("cached", cached))
+            |> Option.iter
+                (function
+                | Some cached -> writer.WriteString("cached", cached)
+                | None -> writer.WriteNull("cached"))
 
             writer.WriteEndObject()
 
@@ -98,7 +101,7 @@ module Vndb =
           data = Rs.toInnerData response
           cached = cached }
 
-    let handler: HttpHandler =
+    let handler isSet : HttpHandler =
         fun next ctx ->
             task {
                 let lp = loginParamsFromHeaders ctx
@@ -113,6 +116,12 @@ module Vndb =
                 | Response.t.Ok ->
                     let! body = sr.ReadToEndAsync()
                     let! ans = Request.send stream body
-                    return! jsonFromString (responseToDto ans None |> responseDtoToJson) next ctx
+
+                    return!
+                        jsonFromString
+                            (responseToDto ans (if isSet then None else Some None)
+                             |> responseDtoToJson)
+                            next
+                            ctx
                 | _ -> return! returnResponse true loginResponse next ctx
             }
