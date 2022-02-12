@@ -6,8 +6,8 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
-open global.Giraffe
-open VndbReProxy.Giraffe.EndpointRouting
+open Giraffe
+open Giraffe.EndpointRouting
 
 open VndbReProxy.Api.Services.Tags
 open VndbReProxy.Api.Services.Traits

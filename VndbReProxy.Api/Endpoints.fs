@@ -1,7 +1,7 @@
 ﻿module VndbReProxy.Api.Endpoints
 
-open global.Giraffe
-open VndbReProxy.Giraffe.EndpointRouting
+open Giraffe
+open Giraffe.EndpointRouting
 open Giraffe.QueryReader
 open VndbReProxy.Api.Utils
 
@@ -16,9 +16,7 @@ let endpointsV1 =
 
 let endpointsV2 =
     [ POST
-      =@> route "/api/v2/vndb" (HandlersV2.vndbHandler false)
-      QUERY
-      =@> route "/api/v2/vndb" (HandlersV2.vndbHandler true)
+      =@> route "/api/v2/vndb" (HandlersV2.vndbHandler)
       POST
       =@> route "/api/v2/login" HandlersV2.loginHandler
       POST

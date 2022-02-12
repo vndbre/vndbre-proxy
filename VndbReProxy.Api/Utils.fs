@@ -2,8 +2,8 @@
 
 open System.Net.Mime
 open FSharp.Control
-open global.Giraffe
-open VndbReProxy.Giraffe.EndpointRouting
+open Giraffe
+open Giraffe.EndpointRouting
 open VndbReProxy.Proto
 
 let (=@>) a b = a [ b ]

@@ -2,7 +2,7 @@
 
 open System.IO
 open FSharp.Control
-open global.Giraffe
+open Giraffe
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Logging
 open VndbReProxy.Api.Services
@@ -17,4 +17,4 @@ let loginHandler : HttpHandler = undefined
 
 let logoutHandler : HttpHandler = undefined
 
-let vndbHandler isQuery : HttpHandler = undefined
+let vndbHandler : HttpHandler = undefined
