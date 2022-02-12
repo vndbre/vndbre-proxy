@@ -47,6 +47,8 @@ let login (conf: Connection.conf) lp : t =
             clientver conf.ClientVer
         }
 
+let logout = "logout"
+
 let private stopByteBuff = [| Proto.stopByte |]
 
 let private write (stream: Stream) (a: t) =

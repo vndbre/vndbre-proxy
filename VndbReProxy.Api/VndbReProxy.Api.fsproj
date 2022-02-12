@@ -7,13 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="Requests\api.http" />
+        <Content Include="Requests\api-v1.http" />
         <Content Include="Requests\*.env.json" />
         <Content Include="Properties\launchSettings.json" />
         <Content Include=".dockerignore" />
         <Content Include="Dockerfile" />
         <Content Include="appsettings.Development.json" />
         <Content Include="appsettings.json" />
+        <Content Include="Requests\api-v2.http" />
     </ItemGroup>
 
     <ItemGroup>

@@ -16,11 +16,11 @@ let endpointsV1 =
 
 let endpointsV2 =
     [ POST
-      =@> route "/api/v2/vndb" (HandlersV2.vndbHandler)
+      =@> route "/api/v2/vndb" HandlersV2.Vndb.handler
       POST
-      =@> route "/api/v2/login" HandlersV2.loginHandler
+      =@> route "/api/v2/login" HandlersV2.Login.handler
       POST
-      =@> route "/api/v2/logout" HandlersV2.logoutHandler
+      =@> route "/api/v2/logout" HandlersV2.Logout.handler
       POST
       =@> routeArray "/api/v2/tags" HandlersV1.tagsHandler
       POST
