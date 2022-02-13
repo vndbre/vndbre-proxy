@@ -1,0 +1,269 @@
+﻿openapi: 3.0.0
+info:
+  title: VndbReProxy
+  description: VndbReProxy
+  version: 2.0.0
+servers:
+  - url: /api/v2
+    description: Development (local)
+  - url: https://vndbre-proxy.azurewebsites.net/api/v2
+    description: Production (Azure)
+paths:
+  /vndb:
+    post:
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              $ref: "#/components/schemas/vndb-query"
+            examples:
+              vndb-query:
+                $ref: "#/components/examples/vndb-query"
+        required: true
+      responses:
+        200:
+          description: VNDB Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer"
+  /tags:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/array-of-ids"
+            examples:
+              sample-array-of-ids:
+                $ref: "#/components/examples/sample-array-of-ids"
+      responses:
+        200:
+          description: Tags
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/tags"
+  /traits:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/array-of-ids"
+            examples:
+              sample-array-of-ids:
+                $ref: "#/components/examples/sample-array-of-ids"
+      responses:
+        200:
+          description: Traits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/traits"
+  /login:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/username-password"
+            examples:
+              sample-username-password:
+                $ref: "#/components/examples/sample-username-password"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/sessiontoken"
+        401:
+          description: Failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer"
+  /logout:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/sessiontoken"
+      responses:
+        200:
+          description: Success
+        401:
+          description: Failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer"
+  /vndb-set:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/sessiontoken"
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              $ref: "#/components/schemas/vndb-query"
+            examples:
+              vndb-query-set:
+                $ref: "#/components/examples/vndb-query-set"
+        required: true
+      responses:
+        200:
+          description: VNDB Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer"
+        401:
+          description: Failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer"
+
+components:
+  schemas:
+    vndb-answer:
+      type: object
+      required:
+        - response
+        - data
+      properties:
+        response:
+          type: string
+        data:
+          type: object
+          description: VNDB Response
+    array-of-ids:
+      type: array
+      items:
+        type: integer
+    tags:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          description:
+            type: string
+          meta:
+            type: boolean
+          searchable:
+            type: boolean
+          applicable:
+            type: boolean
+          vns:
+            type: integer
+          cat:
+            type: string
+          aliases:
+            type: array
+            items:
+              type: string
+          parents:
+            type: array
+            items:
+              type: integer
+        required:
+          - id
+          - name
+          - description
+          - meta
+          - searchable
+          - applicable
+          - vns
+          - cat
+          - aliases
+          - parents
+    traits:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          description:
+            type: string
+          meta:
+            type: boolean
+          searchable:
+            type: boolean
+          applicable:
+            type: boolean
+          chars:
+            type: integer
+          aliases:
+            type: array
+            items:
+              type: string
+          parents:
+            type: array
+            items:
+              type: integer
+        required:
+          - id
+          - name
+          - description
+          - meta
+          - searchable
+          - applicable
+          - chars
+          - aliases
+          - parents
+    username-password:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    sessiontoken:
+      type: object
+      required:
+        - sessiontoken
+      properties:
+        sessiontoken:
+          type: string
+    vndb-query:
+      type: string
+
+  examples:
+    sample-array-of-ids:
+      value: [1, 2, 3]
+    vndb-query:
+      summary: VNDB Query
+      value: 'get vn basic,anime,details (id>=1) {"results":20}'
+    vndb-query-set:
+      summary: VNDB Query (set)
+      value: 'set ulist 17 {"vote":100}'
+    sample-username-password:
+      value:
+        username: Username
+        password: Password
+
+  parameters:
+    username:
+      name: username
+      in: header
+      required: true
+      schema:
+        type: string
+    sessiontoken:
+      name: sessiontoken
+      in: header
+      required: true
+      schema:
+        type: string

@@ -4,7 +4,7 @@ open VndbReProxy.Proto
 [<EntryPoint>]
 let main _ =
     use client =
-        Connection.client Tls Connection.defaultConf
+        Connection.client Connection.Tls Connection.defaultConf
 
     let login =
         match Console.ReadLine() with
@@ -14,15 +14,15 @@ let main _ =
     let password = Console.ReadLine()
 
     use stream =
-        Connection.stream Tls Connection.defaultConf client
+        Connection.stream Connection.Tls Connection.defaultConf client
 
     let requests =
         [ Request.login
             Connection.defaultConf
             (if password |> String.IsNullOrEmpty then
-                 None
+                 Request.Anon
              else
-                 Some(login, password))
+                 Request.Password(login, password))
           "get vn basic,anime (id = 17)"
           "get quote basic (id>=1) {\"results\":1}" ]
 

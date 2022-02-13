@@ -1,0 +1,188 @@
+﻿openapi: 3.1.0
+info:
+  title: VndbReProxy
+  description: VndbReProxy
+  version: 2.0.0
+servers:
+  - url: /api/v2
+    description: Development (local)
+  - url: https://vndbre-proxy.azurewebsites.net/api/v2
+    description: Production (azure)
+paths:
+  /vndb:
+    post:
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              $ref: "#/components/schemas/vndb-query"
+            examples:
+              vndb-query:
+                $ref: "#/components/examples/vndb-query"
+        required: true
+      responses:
+        200:
+          description: TODO
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer"
+  /tags:
+    POST:
+      requestBody:
+        content:
+          application/json:
+            arrayofids:
+              schema:
+                $ref: "#/components/schemas/array-of-ids"
+              example:
+                sample-array-of-ids:
+                  $ref: "#/components/examples/sample-array-of-ids"
+      response:
+        200:
+          description: TODO
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/tags"
+  /traits:
+    POST:
+      requestBody:
+        content:
+          application/json:
+            array-of-ids:
+              schema:
+                $ref: "#/components/schemas/array-of-ids"
+              example:
+                sample-array-of-ids:
+                  $ref: "#/components/examples/sample-array-of-ids"
+      response:
+        200:
+          description: TODO
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/traits"
+  /login:
+    POST:
+      requestBody:
+        content:
+          application/json:
+            username-password:
+              schema:
+                $ref: "#/components/schemas/username-password"
+              example:
+                sample-login-password:
+                  $ref: "#/components/examples/sample-username-password"
+      response:
+        200:
+          description: TODO
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/sessiontoken"
+  /logout:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/sessiontoken"
+      response:
+        200:
+          description: TODO
+        401:
+          description: TODO
+  /vndb-set:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/sessiontoken"
+      requestBody:
+        content:
+          text/plain:
+            examples:
+              vndb-query:
+                $ref: "#/components/examples/vndb-query"
+        required: true
+      responses:
+        200:
+          description: TODO
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer"
+        401:
+          description: TODO
+
+components:
+  schemas:
+    vndb-answer:
+      type: object
+      required:
+        - response
+        - data
+      properties:
+        response:
+          type: string
+        data:
+          type: object
+          summary: VNDB Response
+          description: More on TODO
+    array-of-ids:
+      type: array
+      items:
+        type: integer
+    tags:
+      type: array
+      items:
+        summary: VNDB Tag
+        description: TODO
+        type: object
+    traits:
+      type: array
+      items:
+        summary: VNDB Trait
+        description: TODO
+        type: object
+    username-password:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    sessiontoken:
+      type: object
+      required:
+        - sessiontoken
+      properties:
+        sessiontoken:
+          type: string
+    vndb-query:
+      type:
+        string
+
+  examples:
+    sample-array-of-ids:
+      value: [1, 2, 3]
+    vndb-query:
+      summary: VNDB Query
+      value: 'get vn basic,anime,details (id>=1) {"results":20}'
+    sample-username-password:
+      value: '{"username":"Username","password":"Password"}'
+
+  parameters:
+    username:
+      name: username
+      in: header
+      required: true
+      schema:
+        type: string
+    sessiontoken:
+      name: sessiontoken
+      in: header
+      required: true
+      schema:
+        type: string

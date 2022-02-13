@@ -8,7 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Library.fs" />
+        <Compile Include="Proto.fs" />
+        <Compile Include="Response.fs" />
+        <Compile Include="Connection.fs" />
+        <Compile Include="Request.fs" />
     </ItemGroup>
 
     <ItemGroup>

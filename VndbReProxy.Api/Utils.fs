@@ -5,6 +5,8 @@ open FSharp.Control
 open Giraffe
 open Giraffe.EndpointRouting
 open VndbReProxy.Proto
+open System.IO
+open Microsoft.AspNetCore.Http
 
 let (=@>) a b = a [ b ]
 
@@ -54,3 +56,22 @@ let routeArray<'T> path (handler: 'T array -> HttpHandler) =
                 let! a = ctx.BindJsonAsync<'T array>()
                 return! (handler a) next ctx
             })
+
+let customFile contentType (filePath: string) =
+    fun (_: HttpFunc) (ctx: HttpContext) ->
+        task {
+            let filePath =
+                match Path.IsPathRooted filePath with
+                | true -> filePath
+                | false ->
+                    let env = ctx.GetHostingEnvironment()
+                    Path.Combine(env.ContentRootPath, filePath)
+
+            ctx.SetContentType(contentType + "; charset=utf-8")
+
+            let! html = readFileAsStringAsync filePath
+            return! ctx.WriteStringAsync html
+        }
+
+let jsonFile (filePath: string) : HttpHandler = customFile MediaTypeNames.Application.Json filePath
+let yamlFile (filePath: string) : HttpHandler = customFile "text/plain" filePath

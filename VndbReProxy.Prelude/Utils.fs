@@ -58,6 +58,27 @@ module Utils =
                 .Append("\"")
                 .Append(",")
 
+
+        [<CustomOperation("sessiontoken")>]
+        member inline this.SessionToken(_, value: string) =
+            this
+                .d
+                .Append("\"sessiontoken\":")
+                .Append("\"")
+                .Append(value)
+                .Append("\"")
+                .Append(",")
+
+        [<CustomOperation("createsession")>]
+        member inline this.CreateSession _ =
+            this
+                .d
+                .Append("\"createsession\":")
+                .Append("\"")
+                .Append("true")
+                .Append("\"")
+                .Append(",")
+
         member inline this.Run _ =
             this.d.Remove(this.d.Length - 1, 1).Append("}")
             |> string

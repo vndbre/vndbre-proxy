@@ -12,7 +12,7 @@ open Giraffe.EndpointRouting
 open VndbReProxy.Api.Services.Tags
 open VndbReProxy.Api.Services.Traits
 
-type Startup(configuration: IConfiguration) =
+type Startup(_configuration: IConfiguration) =
     member _.ConfigureServices(services: IServiceCollection) =
         services.AddCors
             (fun options ->
@@ -28,10 +28,13 @@ type Startup(configuration: IConfiguration) =
         services.AddRouting()
         |> ignore<IServiceCollection>
 
-        services.AddAuthorization()
-        |> ignore<IServiceCollection>
+        //services.AddAuthorization()
+        //|> ignore<IServiceCollection>
 
         services.AddLogging()
+        |> ignore<IServiceCollection>
+
+        services.AddResponseCaching()
         |> ignore<IServiceCollection>
 
         services.AddGiraffe()
@@ -49,9 +52,11 @@ type Startup(configuration: IConfiguration) =
             |> ignore<IApplicationBuilder>
 
         app
+            .UseSwaggerUI(fun c -> c.SwaggerEndpoint("/openapi.yaml", "VndbReProxy"))
             .UseHttpsRedirection()
             .UseRouting()
             .UseCors()
-            .UseAuthorization()
+            //.UseAuthorization()
+            .UseResponseCaching()
             .UseEndpoints(fun endpoints -> endpoints.MapGiraffeEndpoints(Endpoints.endpoints))
         |> ignore<IApplicationBuilder>
