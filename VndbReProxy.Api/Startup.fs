@@ -52,6 +52,7 @@ type Startup(_configuration: IConfiguration) =
             |> ignore<IApplicationBuilder>
 
         app
+            .UseSwaggerUI(fun c -> c.SwaggerEndpoint("/openapi.yaml", "VndbReProxy"))
             .UseHttpsRedirection()
             .UseRouting()
             .UseCors()

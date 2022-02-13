@@ -30,7 +30,8 @@ let endpointsV2 =
           POST
           =@> routeArray "/api/v2/tags" HandlersV1.tagsHandler
           POST
-          =@> routeArray "/api/v2/traits" HandlersV1.traitsHandler ]
+          =@> routeArray "/api/v2/traits" HandlersV1.traitsHandler
+          GET =@> route "/openapi.yaml" (yamlFile "Requests/openapi.yaml")]
         |> List.map (applyBefore (publicResponseCaching (60 * 60 * 4) None)) in
 
     nc @ c

@@ -10,6 +10,9 @@
         <Content Include="Requests\api-v1.http" />
         <Content Include="Requests\api-v2.http" />
         <Content Include="Requests\*.env.json" />
+        <Content Include="Requests\openapi.yaml">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
         <Content Include="Properties\launchSettings.json" />
         <Content Include=".dockerignore" />
         <Content Include="Dockerfile" />
@@ -38,6 +41,7 @@
       <PackageReference Include="Giraffe" Version="5.0.0" />
       <PackageReference Include="Giraffe.QueryReader" Version="2.0.0" />
       <PackageReference Update="FSharp.Core" Version="6.0.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.2.3" />
     </ItemGroup>
 
 </Project>

@@ -4,14 +4,18 @@ info:
   description: VndbReProxy
   version: 2.0.0
 servers:
+  - url: /api/v2
+    description: Development (local)
   - url: https://vndbre-proxy.azurewebsites.net/api/v2
-    description: API V2
+    description: Production (azure)
 paths:
   /vndb:
     post:
       requestBody:
         content:
           text/plain:
+            schema:
+              $ref: "#/components/schemas/vndb-query"
             examples:
               vndb-query:
                 $ref: "#/components/examples/vndb-query"
@@ -77,6 +81,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/sessiontoken"
+  /logout:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/sessiontoken"
+      response:
+        200:
+          description: TODO
+        401:
+          description: TODO
+  /vndb-set:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/sessiontoken"
+      requestBody:
+        content:
+          text/plain:
+            examples:
+              vndb-query:
+                $ref: "#/components/examples/vndb-query"
+        required: true
+      responses:
+        200:
+          description: TODO
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer"
+        401:
+          description: TODO
 
 components:
   schemas:
@@ -125,6 +160,9 @@ components:
       properties:
         sessiontoken:
           type: string
+    vndb-query:
+      type:
+        string
 
   examples:
     sample-array-of-ids:
@@ -134,3 +172,17 @@ components:
       value: 'get vn basic,anime,details (id>=1) {"results":20}'
     sample-username-password:
       value: '{"username":"Username","password":"Password"}'
+
+  parameters:
+    username:
+      name: username
+      in: header
+      required: true
+      schema:
+        type: string
+    sessiontoken:
+      name: sessiontoken
+      in: header
+      required: true
+      schema:
+        type: string
