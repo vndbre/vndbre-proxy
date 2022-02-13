@@ -1,0 +1,58 @@
+﻿openapi: 3.1.0
+info:
+  title: VndbReProxy
+  description: VndbReProxy
+  version: 1.0.0
+servers:
+  - url: https://vndbre-proxy.azurewebsites.net/api/
+    description: API V1
+paths:
+  /v1/vndb:
+    post:
+      deprecated: true
+      requestBody:
+        content:
+          text/plain:
+            examples:
+              vndb-query:
+                $ref: "#/components/examples/vndb-query"
+        required: true
+      responses:
+        200:
+          description: See v2
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vndb-answer-v1"
+  /v1/tags:
+    POST:
+      requestBody:
+        content:
+          application/json:
+            arrayofids:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example:
+                sample-array-of-ids:
+                  $ref: "#/components/examples/sample-array-of-ids"
+components:
+  schemas:
+    vndb-answer-v1:
+      type: object
+      required:
+        - response
+        - data
+      properties:
+        response:
+          type: string
+        data:
+          type: object
+
+  examples:
+    sample-array-of-ids:
+      value: [1, 2, 3]
+    vndb-query:
+      summary: VNDB Query
+      value: 'get vn basic,anime,details (id>=1) {"results":20}'
