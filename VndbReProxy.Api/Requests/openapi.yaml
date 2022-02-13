@@ -22,7 +22,7 @@ paths:
         required: true
       responses:
         200:
-          description: TODO
+          description: VNDB Response
           content:
             application/json:
               schema:
@@ -91,7 +91,7 @@ paths:
         - $ref: "#/components/parameters/sessiontoken"
       responses:
         200:
-          description: TODO
+          description: Success
         401:
           description: Failure
           content:
@@ -114,7 +114,7 @@ paths:
         required: true
       responses:
         200:
-          description: TODO
+          description: VNDB Response
           content:
             application/json:
               schema:
