@@ -9,6 +9,8 @@ open System.Text.Json
 type IDumpService<'TKey, 'TValue> =
     abstract TryGet : 'TKey -> 'TValue option
     abstract GetOrDownload : 'TKey -> Task<Result<'TValue, exn>>
+    abstract Download : unit -> Task<unit>
+    abstract TryGetAll : unit -> 'TValue seq option
 
 type DumpService<'TKey, 'TValue when 'TKey: equality>(url: string, idGetter: 'TValue -> 'TKey) =
     let data = Dictionary<'TKey, 'TValue>()
@@ -50,7 +52,15 @@ type DumpService<'TKey, 'TValue when 'TKey: equality>(url: string, idGetter: 'TV
                     | ex -> Error ex
             }
 
+    let tryGetAll () =
+        if data.Count = 0 then
+            None
+        else
+            Some(data.Values |> Seq.cast)
+
     interface IDumpService<'TKey, 'TValue> with
         member this.TryGet(key) = tryGet key
 
         member this.GetOrDownload(key) = getOrDownload key
+        member this.Download() = download ()
+        member this.TryGetAll() = tryGetAll ()
