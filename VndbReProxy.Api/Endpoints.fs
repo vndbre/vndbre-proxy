@@ -28,10 +28,17 @@ let endpointsV2 =
         [ POST
           =@> route "/api/v2/vndb" (HandlersV2.Vndb.handler false)
           POST
-          =@> routeArray "/api/v2/tags" HandlersV1.tagsHandler
+          =@> routeArray "/api/v2/tags" HandlersV2.TagsTraits.byIdsTags
+          GET
+          =@> route "/api/v2/tags"
+              ^ Query.read ("count", "offset", HandlersV2.TagsTraits.getTags)
           POST
-          =@> routeArray "/api/v2/traits" HandlersV1.traitsHandler
-          GET =@> route "/openapi.yaml" (yamlFile "Requests/openapi.yaml")]
+          =@> routeArray "/api/v2/traits" HandlersV2.TagsTraits.byIdsTraits
+          GET
+          =@> route "/api/v2/traits"
+              ^ Query.read ("count", "offset", HandlersV2.TagsTraits.getTraits)
+          GET
+          =@> route "/openapi.yaml" (yamlFile "Requests/openapi.yaml") ]
         |> List.map (applyBefore (publicResponseCaching (60 * 60 * 4) None)) in
 
     nc @ c

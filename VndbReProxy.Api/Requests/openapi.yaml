@@ -44,6 +44,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/tags"
+    get:
+      parameters:
+        - name: count
+          in: query
+          schema:
+            type: string
+        - name: offset
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Tags
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/tags"
   /traits:
     post:
       requestBody:
@@ -54,6 +71,23 @@ paths:
             examples:
               sample-array-of-ids:
                 $ref: "#/components/examples/sample-array-of-ids"
+      responses:
+        200:
+          description: Traits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/traits"
+    get:
+      parameters:
+        - name: count
+          in: query
+          schema:
+            type: string
+        - name: offset
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: Traits
@@ -90,7 +124,7 @@ paths:
         - $ref: "#/components/parameters/username"
         - $ref: "#/components/parameters/sessiontoken"
       responses:
-        200:
+        204:
           description: Success
         401:
           description: Failure

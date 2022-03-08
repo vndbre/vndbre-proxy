@@ -1,9 +1,13 @@
 ﻿module VndbReProxy.Api.HandlersV2
 
 open System.IO
+open System.Threading.Tasks
 open FSharp.Control
 open Giraffe
 open Microsoft.AspNetCore.Http
+open VndbReProxy.Api.Services
+open VndbReProxy.Api.Services.Tags
+open VndbReProxy.Api.Services.Traits
 open VndbReProxy.Api.Utils
 open VndbReProxy.Proto
 open System
@@ -125,3 +129,59 @@ module Vndb =
                             ctx
                 | _ -> return! returnResponse true loginResponse next ctx
             }
+
+module TagsTraits =
+    let count_offset s count offset =
+        match count, offset with
+        | _, Some offset when offset > Seq.length s -> Seq.empty
+        | Some count, Some offset -> s |> Seq.skip offset |> Seq.truncate count
+        | Some count, None -> s |> Seq.truncate count
+        | None, Some offset -> s |> Seq.skip offset
+        | None, None -> s
+
+    let private get (count: int option) (offset: int option) (tService: IDumpService<int, _>) next ctx =
+        task {
+            let all = tService.TryGetAll()
+
+            let! () =
+                if Option.isNone all then
+                    tService.Download()
+                else
+                    Task.FromResult()
+
+            let all = tService.TryGetAll()
+
+            match all with
+            | Some all -> return! json (count_offset all count offset) next ctx
+            | None -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
+        }
+
+    let getTags count offset : HttpHandler =
+        inject1<IDumpService<int, Tag>> ^ get count offset
+
+    let getTraits count offset : HttpHandler =
+        inject1<IDumpService<int, Trait>>
+        ^ get count offset
+
+    let private byIds ids (tagsService: IDumpService<int, _>) next ctx =
+        task {
+            let idHead = ids |> Array.head
+            let idTail = ids |> Array.tail
+
+            let! tagHead = tagsService.GetOrDownload idHead
+
+            let tagTail =
+                idTail
+                |> Array.map tagsService.TryGet
+                |> Array.choose id
+
+            match tagHead with
+            | Ok hd -> return! json (Array.append [| hd |] tagTail) next ctx
+            | Error _ -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
+        }
+
+    let byIdsTags ids : HttpHandler =
+        inject1<IDumpService<int, Tag>> ^ byIds ids
+
+    let byIdsTraits ids : HttpHandler =
+        inject1<IDumpService<int, Trait>> ^ byIds ids
