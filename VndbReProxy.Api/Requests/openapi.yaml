@@ -48,12 +48,13 @@ paths:
       parameters:
         - name: count
           in: query
+          required: true
           schema:
-            type: string
+            type: integer
         - name: offset
           in: query
           schema:
-            type: string
+            type: integer
       responses:
         200:
           description: Tags
@@ -82,12 +83,13 @@ paths:
       parameters:
         - name: count
           in: query
+          required: true
           schema:
-            type: string
+            type: integer
         - name: offset
           in: query
           schema:
-            type: string
+            type: integer
       responses:
         200:
           description: Traits

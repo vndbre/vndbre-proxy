@@ -39,7 +39,7 @@ let endpointsV2 =
               ^ Query.read ("count", "offset", HandlersV2.TagsTraits.getTraits)
           GET
           =@> route "/openapi.yaml" (yamlFile "Requests/openapi.yaml") ]
-        |> List.map (applyBefore (publicResponseCaching (60 * 60 * 4) None)) in
+//        |> List.map (applyBefore (publicResponseCaching (60 * 60 * 4) None)) in
 
     nc @ c
 
