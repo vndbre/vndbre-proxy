@@ -1,6 +1,6 @@
 ﻿namespace VndbReProxy.Api.Services
 
-open System.Collections.Generic
+open System.Collections.Concurrent
 open System.IO.Compression
 open System.Net.Http
 open System.Threading.Tasks
@@ -12,12 +12,33 @@ type IDumpService<'TKey, 'TValue> =
     abstract Download : unit -> Task<unit>
     abstract TryGetAll : unit -> 'TValue seq option
 
-type DumpService<'TKey, 'TValue when 'TKey: equality>(url: string, idGetter: 'TValue -> 'TKey) =
-    let data = Dictionary<'TKey, 'TValue>()
+type ITagTrait<'TId> =
+    abstract Id : 'TId
+    abstract Parents : 'TId array
+    abstract RootId : 'TId voption with get, set
+
+type DumpService<'TKey, 'TValue when 'TKey: equality and 'TValue :> ITagTrait<'TKey>>(url: string) =
+    let data = ConcurrentDictionary<'TKey, 'TValue>()
+
+    let rec getAndSetRootId (tag_trait: 'TValue) =
+        match tag_trait.RootId with
+        | ValueSome root_id -> root_id
+        | ValueNone ->
+            match tag_trait.Parents with
+            | [||] ->
+                tag_trait.RootId <- ValueSome tag_trait.Id
+                tag_trait.Id
+            | parents ->
+                let res = getAndSetRootId data.[parents.[0]]
+
+                tag_trait.RootId <- ValueSome res
+                res
 
     let tryGet key =
         if data.ContainsKey key then
-            Some data.[key]
+            let tag_trait = data.[key]
+            getAndSetRootId tag_trait |> ignore<'TKey>
+            Some tag_trait
         else
             None
 
@@ -35,7 +56,7 @@ type DumpService<'TKey, 'TValue when 'TKey: equality>(url: string, idGetter: 'TV
             data.Clear()
 
             for i in items do
-                data.[idGetter i] <- i
+                data.[i.Id] <- i
         }
 
     let getOrDownload key =
@@ -56,7 +77,13 @@ type DumpService<'TKey, 'TValue when 'TKey: equality>(url: string, idGetter: 'TV
         if data.Count = 0 then
             None
         else
-            Some(data.Values |> Seq.cast)
+            data.Values
+            |> Seq.cast
+            |> Seq.map
+                (fun tag_trait ->
+                    getAndSetRootId tag_trait |> ignore<'TKey>
+                    tag_trait)
+            |> Some
 
     interface IDumpService<'TKey, 'TValue> with
         member this.TryGet(key) = tryGet key

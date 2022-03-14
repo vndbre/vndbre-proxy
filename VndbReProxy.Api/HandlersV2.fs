@@ -132,12 +132,14 @@ module Vndb =
 
 module TagsTraits =
     let count_offset s count offset =
-        match count, offset with
-        | _, Some offset when offset > Seq.length s -> Seq.empty
-        | Some count, Some offset -> s |> Seq.skip offset |> Seq.truncate count
-        | Some count, None -> s |> Seq.truncate count
-        | None, Some offset -> s |> Seq.skip offset
-        | None, None -> s
+        try
+            match count, offset with
+            | Some count, Some offset -> s |> Seq.skip offset |> Seq.truncate count
+            | Some count, None -> s |> Seq.truncate count
+            | None, Some offset -> s |> Seq.skip offset
+            | None, None -> s
+        with
+        | :? InvalidOperationException -> Seq.empty
 
     let private get (count: int option) (offset: int option) (tService: IDumpService<int, _>) next ctx =
         task {

@@ -1,5 +1,7 @@
 namespace VndbReProxy.Api
 
+open System.Text.Json
+open System.Text.Json.Serialization
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Hosting
@@ -44,6 +46,16 @@ type Startup(_configuration: IConfiguration) =
         |> ignore<IServiceCollection>
 
         services.AddTraits("https://dl.vndb.org/dump/vndb-traits-latest.json.gz")
+        |> ignore<IServiceCollection>
+
+        services.AddSingleton(
+            let jsonOptions = JsonSerializerOptions()
+            jsonOptions.Converters.Add(JsonFSharpConverter())
+            jsonOptions
+        )
+        |> ignore<IServiceCollection>
+
+        services.AddSingleton<Json.ISerializer, SystemTextJson.Serializer>()
         |> ignore<IServiceCollection>
 
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =

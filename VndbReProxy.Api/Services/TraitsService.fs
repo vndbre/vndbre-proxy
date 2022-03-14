@@ -9,10 +9,19 @@ type Trait =
       applicable: bool
       chars: int
       aliases: string array
-      parents: int array }
+      parents: int array
+      mutable root_id: int voption }
+
+    interface ITagTrait<int> with
+        member this.Id = this.id
+        member this.Parents = this.parents
+
+        member this.RootId
+            with get () = this.root_id
+            and set value = this.root_id <- value
 
 type TraitsService(url) =
-    inherit DumpService<int, Trait>(url, (fun a -> a.id))
+    inherit DumpService<int, Trait>(url)
 
 open Microsoft.Extensions.DependencyInjection
 
