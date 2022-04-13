@@ -21,6 +21,8 @@ type Tag =
             with get () = this.root_id
             and set value = this.root_id <- value
 
+        member this.Name = this.name
+
 type TagsService(url) =
     inherit DumpService<int, Tag>(url)
 

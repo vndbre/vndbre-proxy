@@ -55,6 +55,10 @@ paths:
           in: query
           schema:
             type: integer
+        - name: name
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: Tags
@@ -90,6 +94,10 @@ paths:
           in: query
           schema:
             type: integer
+        - name: name
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: Traits
@@ -208,6 +216,8 @@ components:
             type: array
             items:
               type: integer
+          root_id:
+            type: integer
         required:
           - id
           - name
@@ -219,6 +229,7 @@ components:
           - cat
           - aliases
           - parents
+          - root_id
     traits:
       type: array
       items:
@@ -246,6 +257,8 @@ components:
             type: array
             items:
               type: integer
+          root_id:
+            type: integer
         required:
           - id
           - name
@@ -256,6 +269,7 @@ components:
           - chars
           - aliases
           - parents
+          - root_id
     username-password:
       type: object
       required:

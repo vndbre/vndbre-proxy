@@ -141,7 +141,14 @@ module TagsTraits =
         with
         | :? InvalidOperationException -> Seq.empty
 
-    let private get (count: int option) (offset: int option) (tService: IDumpService<int, _>) next ctx =
+    let private get
+        (count: int option)
+        (offset: int option)
+        (name: string option)
+        (tService: IDumpService<int, #ITagTrait<int>>)
+        next
+        ctx
+        =
         task {
             let all = tService.TryGetAll()
 
@@ -154,16 +161,30 @@ module TagsTraits =
             let all = tService.TryGetAll()
 
             match all with
-            | Some all -> return! json (count_offset all count offset) next ctx
+            | Some all ->
+                let filtered =
+                    match name with
+                    | Some name ->
+                        all
+                        |> Seq.filter
+                            (fun el ->
+                                el
+                                    .Name
+                                    .ToLowerInvariant()
+                                    .Contains(name.ToLowerInvariant()))
+                    | None -> all
+
+                return! json (count_offset filtered count offset) next ctx
             | None -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
         }
 
-    let getTags count offset : HttpHandler =
-        inject1<IDumpService<int, Tag>> ^ get count offset
+    let getTags count offset name : HttpHandler =
+        inject1<IDumpService<int, Tag>>
+        ^ get count offset name
 
-    let getTraits count offset : HttpHandler =
+    let getTraits count offset name : HttpHandler =
         inject1<IDumpService<int, Trait>>
-        ^ get count offset
+        ^ get count offset name
 
     let private byIds ids (tagsService: IDumpService<int, _>) next ctx =
         task {

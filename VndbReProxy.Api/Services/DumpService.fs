@@ -16,9 +16,12 @@ type ITagTrait<'TId> =
     abstract Id : 'TId
     abstract Parents : 'TId array
     abstract RootId : 'TId voption with get, set
+    abstract Name : string
 
 type DumpService<'TKey, 'TValue when 'TKey: equality and 'TValue :> ITagTrait<'TKey>>(url: string) =
     let data = ConcurrentDictionary<'TKey, 'TValue>()
+
+
 
     let rec getAndSetRootId (tag_trait: 'TValue) =
         match tag_trait.RootId with

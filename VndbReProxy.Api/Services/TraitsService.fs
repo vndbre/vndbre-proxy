@@ -20,6 +20,8 @@ type Trait =
             with get () = this.root_id
             and set value = this.root_id <- value
 
+        member this.Name = this.name
+
 type TraitsService(url) =
     inherit DumpService<int, Trait>(url)
 
