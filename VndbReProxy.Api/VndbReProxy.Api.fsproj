@@ -25,8 +25,8 @@
         <Compile Include="Services\DumpService.fs" />
         <Compile Include="Services\TagsService.fs" />
         <Compile Include="Services\TraitsService.fs" />
-        <Compile Include="HandlersV1.fs" />
         <Compile Include="HandlersV2.fs" />
+        <Compile Include="HandlersV1.fs" />
         <Compile Include="Endpoints.fs" />
         <Compile Include="Startup.fs" />
         <Compile Include="Program.fs" />

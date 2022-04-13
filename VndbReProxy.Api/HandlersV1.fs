@@ -61,40 +61,6 @@ let v1vndbHandler (login: string option) (password: string option) : HttpHandler
                 return! returnResponse true w next ctx
         }
 
-let tagsHandler (ids: int array) : HttpHandler =
-    inject1<IDumpService<int, Tag>>
-    ^ fun tagsService next ctx ->
-        task {
-            let idHead = ids |> Array.head
-            let idTail = ids |> Array.tail
+let tagsHandler = HandlersV2.TagsTraits.byIdsTags
 
-            let! tagHead = tagsService.GetOrDownload idHead
-
-            let tagTail =
-                idTail
-                |> Array.map tagsService.TryGet
-                |> Array.choose id
-
-            match tagHead with
-            | Ok hd -> return! json (Array.append [| hd |] tagTail) next ctx
-            | Error _ -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
-        }
-
-let traitsHandler (ids: int array) : HttpHandler =
-    inject1<IDumpService<int, Trait>>
-    ^ fun traitService next ctx ->
-        task {
-            let idHead = ids |> Array.head
-            let idTail = ids |> Array.tail
-
-            let! traitHead = traitService.GetOrDownload idHead
-
-            let tagTail =
-                idTail
-                |> Array.map traitService.TryGet
-                |> Array.choose id
-
-            match traitHead with
-            | Ok hd -> return! json (Array.append [| hd |] tagTail) next ctx
-            | Error _ -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
-        }
+let traitsHandler = HandlersV2.TagsTraits.byIdsTraits
