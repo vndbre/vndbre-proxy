@@ -10,9 +10,9 @@ let endpointsV1 =
       =@> route "/api/v1/vndb"
           ^ Query.read ("login", "password", HandlersV1.v1vndbHandler)
       POST
-      =@> routeArray "/api/v1/tags" HandlersV1.tagsHandler
+      =@> routeArray "/api/v1/tags" HandlersV2.TagsTraits.byIdsTags
       POST
-      =@> routeArray "/api/v1/traits" HandlersV1.traitsHandler ]
+      =@> routeArray "/api/v1/traits" HandlersV2.TagsTraits.byIdsTraits ]
 
 let endpointsV2 =
     [ POST
