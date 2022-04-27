@@ -61,7 +61,7 @@ module Logout =
                 let! w = Rq.login C.defaultConf lp |> Rq.send stream
 
                 match w with
-                | Rs.t.Ok ->
+                | Rs.Ok ->
                     let! ans = Rq.send stream Rq.logout
                     return! returnResponse false ans next ctx
                 | _ -> return! returnResponse true w next ctx
@@ -150,32 +150,21 @@ module TagsTraits =
         ctx
         =
         task {
-            let all = tService.TryGetAll()
+            let! all = tService.GetAllOrDownload()
 
-            let! () =
-                if Option.isNone all then
-                    tService.Download()
-                else
-                    Task.FromResult()
+            let filtered =
+                match name with
+                | Some name ->
+                    all
+                    |> Seq.filter
+                        (fun el ->
+                            el
+                                .Name
+                                .ToLowerInvariant()
+                                .Contains(name.ToLowerInvariant()))
+                | None -> all
 
-            let all = tService.TryGetAll()
-
-            match all with
-            | Some all ->
-                let filtered =
-                    match name with
-                    | Some name ->
-                        all
-                        |> Seq.filter
-                            (fun el ->
-                                el
-                                    .Name
-                                    .ToLowerInvariant()
-                                    .Contains(name.ToLowerInvariant()))
-                    | None -> all
-
-                return! json (count_offset filtered count offset) next ctx
-            | None -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
+            return! json (count_offset filtered count offset) next ctx
         }
 
     let getTags count offset name : HttpHandler =
@@ -188,19 +177,12 @@ module TagsTraits =
 
     let private byIds ids (tagsService: IDumpService<int, _>) next ctx =
         task {
-            let idHead = ids |> Array.head
-            let idTail = ids |> Array.tail
+            let! t =
+                ids
+                |> Array.map tagsService.GetOrDownload
+                |> Task.WhenAll
 
-            let! tagHead = tagsService.GetOrDownload idHead
-
-            let tagTail =
-                idTail
-                |> Array.map tagsService.TryGet
-                |> Array.choose id
-
-            match tagHead with
-            | Ok hd -> return! json (Array.append [| hd |] tagTail) next ctx
-            | Error _ -> return! emptyResponse StatusCodes.Status400BadRequest next ctx
+            return! json t next ctx
         }
 
     let byIdsTags ids : HttpHandler =

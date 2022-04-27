@@ -25,8 +25,8 @@
         <Compile Include="Services\DumpService.fs" />
         <Compile Include="Services\TagsService.fs" />
         <Compile Include="Services\TraitsService.fs" />
-        <Compile Include="HandlersV1.fs" />
         <Compile Include="HandlersV2.fs" />
+        <Compile Include="HandlersV1.fs" />
         <Compile Include="Endpoints.fs" />
         <Compile Include="Startup.fs" />
         <Compile Include="Program.fs" />
@@ -39,10 +39,10 @@
 
     <ItemGroup>
       <PackageReference Include="FSharp.SystemTextJson" Version="0.17.4" />
-      <PackageReference Include="Giraffe" Version="5.0.0" />
+      <PackageReference Include="Giraffe" Version="6.0.0" />
       <PackageReference Include="Giraffe.QueryReader" Version="2.0.0" />
-      <PackageReference Update="FSharp.Core" Version="6.0.0" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.2.3" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.3.1" />
+      <PackageReference Update="FSharp.Core" Version="6.0.3" />
     </ItemGroup>
 
 </Project>

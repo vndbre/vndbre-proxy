@@ -67,10 +67,8 @@ let private write (stream: Stream) (a: t) =
 let send (stream: Stream) (a: t) =
     task {
         match! write stream a with
-        | Error err -> return Response.t.InternalError err
+        | Error err -> return Response.InternalError err
         | _ ->
             let! ans = Proto.nextMsg stream
-            let ret = Response.parseResult ans
-
-            return ret
+            return Response.parseResult ans
     }

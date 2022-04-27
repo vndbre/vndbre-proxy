@@ -1,5 +1,6 @@
 ﻿namespace VndbReProxy.Api.Services
 
+open System
 open System.Collections.Concurrent
 open System.IO.Compression
 open System.Net.Http
@@ -7,10 +8,8 @@ open System.Threading.Tasks
 open System.Text.Json
 
 type IDumpService<'TKey, 'TValue> =
-    abstract TryGet : 'TKey -> 'TValue option
-    abstract GetOrDownload : 'TKey -> Task<Result<'TValue, exn>>
-    abstract Download : unit -> Task<unit>
-    abstract TryGetAll : unit -> 'TValue seq option
+    abstract GetOrDownload : 'TKey -> Task<'TValue>
+    abstract GetAllOrDownload : unit -> Task<'TValue seq>
 
 type ITagTrait<'TId> =
     abstract Id : 'TId
@@ -21,7 +20,7 @@ type ITagTrait<'TId> =
 type DumpService<'TKey, 'TValue when 'TKey: equality and 'TValue :> ITagTrait<'TKey>>(url: string) =
     let data = ConcurrentDictionary<'TKey, 'TValue>()
 
-
+    let mutable downloadTime = None
 
     let rec getAndSetRootId (tag_trait: 'TValue) =
         match tag_trait.RootId with
@@ -60,37 +59,36 @@ type DumpService<'TKey, 'TValue when 'TKey: equality and 'TValue :> ITagTrait<'T
 
             for i in items do
                 data.[i.Id] <- i
+
+            downloadTime <- Some DateTimeOffset.Now
         }
 
     let getOrDownload key =
         match tryGet key with
-        | Some a -> Ok a |> Task.FromResult
+        | Some a -> a |> Task.FromResult
         | None ->
             task {
                 do! download ()
 
-                return
-                    try
-                        Ok data.[key]
-                    with
-                    | ex -> Error ex
+                return data.[key]
             }
 
-    let tryGetAll () =
-        if data.Count = 0 then
-            None
-        else
-            data.Values
-            |> Seq.cast
-            |> Seq.map
-                (fun tag_trait ->
-                    getAndSetRootId tag_trait |> ignore<'TKey>
-                    tag_trait)
-            |> Some
+    let getAllOrDownload () =
+        task {
+            match downloadTime with
+            | None -> do! download ()
+            | Some t when DateTimeOffset.Now - t < (TimeSpan.FromSeconds 1) -> do! download ()
+            | Some _ -> ()
+
+            return
+                data.Values
+                |> Seq.cast
+                |> Seq.map
+                    (fun tag_trait ->
+                        getAndSetRootId tag_trait |> ignore<'TKey>
+                        tag_trait)
+        }
 
     interface IDumpService<'TKey, 'TValue> with
-        member this.TryGet(key) = tryGet key
-
         member this.GetOrDownload(key) = getOrDownload key
-        member this.Download() = download ()
-        member this.TryGetAll() = tryGetAll ()
+        member this.GetAllOrDownload() = getAllOrDownload ()
