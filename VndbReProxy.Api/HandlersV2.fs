@@ -61,7 +61,7 @@ module Logout =
                 let! w = Rq.login C.defaultConf lp |> Rq.send stream
 
                 match w with
-                | Rs.t.Ok ->
+                | Rs.Ok ->
                     let! ans = Rq.send stream Rq.logout
                     return! returnResponse false ans next ctx
                 | _ -> return! returnResponse true w next ctx

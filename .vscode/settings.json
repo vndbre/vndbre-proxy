@@ -1,0 +1,8 @@
+{
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.json": [
+            "file:///k%3A/Projects/VnListProxy/VndbReProxy.Api/Requests/vndbre-proxy.yaml"
+        ],
+        "file:///c%3A/Users/vladislav/.vscode/extensions/mermade.openapi-lint-1.2.0/schemas/openapi-3.0.json": "file:///k%3A/Projects/VnListProxy/VndbReProxy.Api/Requests/openapi.yaml"
+    }
+}

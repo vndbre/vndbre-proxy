@@ -20,17 +20,7 @@ let readByte buff (stream: Stream) =
             return ValueNone
     }
 
-let rec private nextMsgAux stream buff acc =
-    task {
-        let! b = readByte buff stream
-
-        match b with
-        | ValueSome bt when bt = stopByte -> return acc |> Some
-        | ValueSome bt -> return! nextMsgAux stream buff (bt :: acc)
-        | ValueNone -> return None
-    }
-
-let rec private nextMsgMut stream buff acc =
+let private nextMsgMut stream buff acc =
     task {
         let mutable ret = None
         let mutable acc = acc

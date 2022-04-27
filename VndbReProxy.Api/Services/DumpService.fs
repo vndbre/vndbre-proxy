@@ -90,6 +90,5 @@ type DumpService<'TKey, 'TValue when 'TKey: equality and 'TValue :> ITagTrait<'T
         }
 
     interface IDumpService<'TKey, 'TValue> with
-
         member this.GetOrDownload(key) = getOrDownload key
         member this.GetAllOrDownload() = getAllOrDownload ()
