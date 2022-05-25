@@ -1,5 +1,7 @@
 ﻿module VndbReProxy.Api.Services.Tags
 
+open Microsoft.Extensions.Logging
+
 type Tag =
     { id: int
       name: string
@@ -23,11 +25,17 @@ type Tag =
 
         member this.Name = this.name
 
-type TagsService(url) =
-    inherit DumpService<int, Tag>(url)
+type TagsService(logger, url) =
+    inherit DumpService<int, Tag>(logger, url)
 
 open Microsoft.Extensions.DependencyInjection
 
 type IServiceCollection with
     member this.AddTags(url) =
-        this.AddSingleton<IDumpService<int, Tag>, TagsService>(fun _ -> TagsService(url))
+        this.AddSingleton<IDumpService<int, Tag>, TagsService> (fun s ->
+            TagsService(
+                s.GetService<ILogger<TagsService>>()
+                |> box
+                |> Unchecked.unbox,
+                url
+            ))

@@ -1,5 +1,7 @@
 ﻿module VndbReProxy.Api.Services.Traits
 
+open Microsoft.Extensions.Logging
+
 type Trait =
     { id: int
       name: string
@@ -22,11 +24,17 @@ type Trait =
 
         member this.Name = this.name
 
-type TraitsService(url) =
-    inherit DumpService<int, Trait>(url)
+type TraitsService(logger, url) =
+    inherit DumpService<int, Trait>(logger, url)
 
 open Microsoft.Extensions.DependencyInjection
 
 type IServiceCollection with
     member this.AddTraits(url) =
-        this.AddSingleton<IDumpService<int, Trait>, TraitsService>(fun _ -> TraitsService(url))
+        this.AddSingleton<IDumpService<int, Trait>, TraitsService> (fun s ->
+            TraitsService(
+                s.GetService<ILogger<TraitsService>>()
+                |> box
+                |> Unchecked.unbox,
+                url
+            ))

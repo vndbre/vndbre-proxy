@@ -16,15 +16,13 @@ open VndbReProxy.Api.Services.Traits
 
 type Startup(_configuration: IConfiguration) =
     member _.ConfigureServices(services: IServiceCollection) =
-        services.AddCors
-            (fun options ->
-                options.AddDefaultPolicy
-                    (fun builder ->
-                        builder
-                            .AllowAnyOrigin()
-                            .AllowAnyHeader()
-                            .AllowAnyMethod()
-                        |> ignore<CorsPolicyBuilder>))
+        services.AddCors (fun options ->
+            options.AddDefaultPolicy (fun builder ->
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                |> ignore<CorsPolicyBuilder>))
         |> ignore<IServiceCollection>
 
         services.AddRouting()
@@ -59,9 +57,9 @@ type Startup(_configuration: IConfiguration) =
         |> ignore<IServiceCollection>
 
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
-        if (env.IsDevelopment()) then
-            app.UseDeveloperExceptionPage()
-            |> ignore<IApplicationBuilder>
+        //if env.IsDevelopment() then
+        app.UseDeveloperExceptionPage()
+        |> ignore<IApplicationBuilder>
 
         app
             .UseSwaggerUI(fun c -> c.SwaggerEndpoint("/openapi.yaml", "VndbReProxy"))

@@ -31,7 +31,9 @@ module Login =
                     Rq.login C.defaultConf (Rq.CreateSession(loginDto.username, loginDto.password))
 
                 use client = C.client C.Tls C.defaultConf
-                use stream = C.stream C.Tls C.defaultConf client
+
+                use stream =
+                    C.stream C.Tls C.defaultConf client
 
                 let! w = Rq.send stream loginCmd
 
@@ -41,8 +43,11 @@ module Login =
             }
 
 let private loginParamsFromHeaders (ctx: HttpContext) =
-    let username = ctx.TryGetRequestHeader "username"
-    let st = ctx.TryGetRequestHeader "sessiontoken"
+    let username =
+        ctx.TryGetRequestHeader "username"
+
+    let st =
+        ctx.TryGetRequestHeader "sessiontoken"
 
     match username, st with
     | Some username, Some sessiontoken -> Rq.SessionToken(username, sessiontoken)
@@ -56,7 +61,8 @@ module Logout =
 
                 use client = C.client C.Tls C.defaultConf
 
-                use stream = C.stream C.Tls C.defaultConf client
+                use stream =
+                    C.stream C.Tls C.defaultConf client
 
                 let! w = Rq.login C.defaultConf lp |> Rq.send stream
 
@@ -91,8 +97,7 @@ module Vndb =
             writeInnerData writer dto.data
 
             dto.cached
-            |> Option.iter
-                (function
+            |> Option.iter (function
                 | Some cached -> writer.WriteString("cached", cached)
                 | None -> writer.WriteNull("cached"))
 
@@ -112,7 +117,9 @@ module Vndb =
 
                 use sr = new StreamReader(ctx.Request.Body)
                 use client = C.client C.Tls C.defaultConf
-                use stream = C.stream C.Tls C.defaultConf client
+
+                use stream =
+                    C.stream C.Tls C.defaultConf client
 
                 let! loginResponse = Rq.login C.defaultConf lp |> Rq.send stream
 
@@ -150,18 +157,18 @@ module TagsTraits =
         ctx
         =
         task {
-            let! all = tService.GetAllOrDownload()
+            do! tService.DownloadIfOld()
+            let all = tService.GetAll()
 
             let filtered =
                 match name with
                 | Some name ->
                     all
-                    |> Seq.filter
-                        (fun el ->
-                            el
-                                .Name
-                                .ToLowerInvariant()
-                                .Contains(name.ToLowerInvariant()))
+                    |> Seq.filter (fun el ->
+                        el
+                            .Name
+                            .ToLowerInvariant()
+                            .Contains(name.ToLowerInvariant()))
                 | None -> all
 
             return! json (count_offset filtered count offset) next ctx
@@ -177,10 +184,12 @@ module TagsTraits =
 
     let private byIds ids (tagsService: IDumpService<int, _>) next ctx =
         task {
-            let! t =
+            do! tagsService.DownloadIfOld()
+
+            let t =
                 ids
-                |> Array.map tagsService.GetOrDownload
-                |> Task.WhenAll
+                |> Array.map tagsService.TryGet
+                |> Array.choose id
 
             return! json t next ctx
         }
